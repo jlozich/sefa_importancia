@@ -1,6 +1,14 @@
-const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-
 document.addEventListener("DOMContentLoaded", async () => {
+
+  // Proteção: garante que a chave foi carregada antes de criar o cliente
+  if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+    console.error("Chave do Supabase não encontrada no window. Verifique config.js");
+    alert("Erro: chave do Supabase não carregada.");
+    return;
+  }
+
+  const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
   const authCard = document.getElementById("authCard");
   const appSection = document.getElementById("app");
   const emailLabel = document.getElementById("userEmail");
@@ -21,8 +29,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!r.ok) throw new Error("Erro HTTP: " + r.status);
       return await r.json();
     } catch (e) {
-      console.error(e);
-      discContainer.textContent = "Erro ao carregar edital.";
+      console.error("Erro ao carregar edital:", e);
+      if (discContainer) discContainer.textContent = "Erro ao carregar edital.";
       return null;
     }
   }
@@ -31,8 +39,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const done = document.querySelectorAll(".topic input:checked").length;
     const total = document.querySelectorAll(".topic input[type='checkbox']").length;
     const pct = total ? Math.round((done / total) * 100) : 0;
-    overallBar.style.width = pct + "%";
-    overallPct.textContent = pct;
+    if (overallBar) overallBar.style.width = pct + "%";
+    if (overallPct) overallPct.textContent = pct;
   }
 
   async function salvarMarcacao(topico, estado) {
@@ -42,9 +50,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         topico,
         estudado: estado
       });
-      if (error) console.error(error);
+      if (error) console.error("Erro upsert:", error.message);
     } catch (e) {
-      console.error(e);
+      console.error("Erro salvarMarcacao:", e);
     }
   }
 
@@ -55,24 +63,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         .eq("user_id", USER_UUID);
 
       if (error) {
-        console.error(error);
+        console.error("Erro select:", error.message);
         return;
       }
 
       for (const r of data || []) {
-        const cb = document.querySelector(`.topic[data-topico="${CSS.escape(r.topico)}"] input`);
+        const li = document.querySelector(`.topic[data-topico="${CSS.escape(r.topico)}"]`);
+        const cb = li?.querySelector("input[type='checkbox']");
         if (cb) cb.checked = r.estudado;
+        if (li) li.classList.toggle("done", r.estudado);
       }
 
       atualizarProgresso();
     } catch (e) {
-      console.error(e);
+      console.error("Erro carregarMarcados:", e);
     }
   }
 
   async function renderizar() {
     const edital = await carregarEdital();
-    if (!edital) return;
+    if (!edital || !discContainer) return;
 
     discContainer.innerHTML = "";
 
@@ -105,6 +115,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       discContainer.innerHTML += bloco;
     }
 
+    // Eventos de clique para marcar/desmarcar
     document.querySelectorAll(".topic").forEach(li => {
       const cb = li.querySelector("input");
       li.addEventListener("click", async (ev) => {
@@ -124,7 +135,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     if (error) {
-      alert("Login falhou");
+      console.error("Erro login:", error.message);
+      alert("Login falhou. Verifique e-mail/senha ou confirmação.");
       return;
     }
 
@@ -144,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       email: emailInput.value.trim(),
       password: passInput.value.trim()
     });
-    if (error) alert("Erro ao criar conta");
+    if (error) console.error("Erro signup:", error.message);
   });
 
   btnLogout.addEventListener("click", () => location.reload());
