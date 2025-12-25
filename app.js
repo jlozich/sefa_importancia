@@ -1,180 +1,133 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  // ============ SUPABASE ============
   const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-  // ============ ELEMENTOS DA UI ============
-  const authCard = document.getElementById("authCard");
-  const appSection = document.getElementById("app");
-  const userEmailEl = document.getElementById("userEmail");
-  const discContainer = document.getElementById("discContainer");
-  const overallBar = document.getElementById("overallBar");
-  const overallPct = document.getElementById("overallPct");
+  // Usar const apenas 1 vez e evitar redeclaração
+  const discBox = document.getElementById("discContainer");
+  const bar = document.getElementById("overallBar");
+  const pctEl = document.getElementById("overallPct");
+  const emailEl = document.getElementById("userEmail");
+  const emailIn = document.getElementById("email");
+  const passIn = document.getElementById("password");
+  const loginBtn = document.getElementById("btnLogin");
+  const signupBtn = document.getElementById("btnSignup");
+  const logoutBtn = document.getElementById("btnLogout");
+  const errEl = document.getElementById("authErr");
 
-  const emailInput = document.getElementById("email");
-  const passInput = document.getElementById("password");
-  const btnLogin = document.getElementById("btnLogin");
-  const btnSignup = document.getElementById("btnSignup");
-  const btnLogout = document.getElementById("btnLogout");
-  const authErr = document.getElementById("authErr");
+  let user = null;
 
-  let currentUser = null;
-
-  // ============ CARREGAR EDITAL JSON ============
-  async function carregarEdital() {
+  async function loadJSON() {
     try {
-      const res = await fetch("edital_auditor.json");
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return await res.json();
-    } catch (e) {
-      console.error("Falha ao carregar JSON:", e);
+      const r = await fetch("edital_auditor.json");
+      if (!r.ok) throw new Error(r.status);
+      return await r.json();
+    } catch {
       return null;
     }
   }
 
-  const edital = await carregarEdital();
-  if (!edital) {
-    discContainer.textContent = "Erro ao carregar edital.";
+  const data = await loadJSON();
+  if (!data) {
+    if (discBox) discBox.textContent = "Falha ao carregar dados.";
     return;
   }
 
-  // ============ RENDERIZAR MATÉRIAS E TÓPICOS ============
-  async function renderUI(user) {
-    discContainer.innerHTML = "";
-    let total = 0;
-    let feitos = 0;
+  async function draw(user) {
+    if (!discBox) return;
+    discBox.innerHTML = "";
 
-    for (const d of edital.disciplinas) {
-      let bloco = `<div class="card section"><h2>${d.nome}</h2>`;
+    let total = 0;
+    let done = 0;
+
+    for (const d of data.disciplinas) {
+      let html = `<div class="card section"><h2>${d.nome}</h2>`;
 
       if (d.subsecoes) {
         for (const s of d.subsecoes) {
-          bloco += `<h3>${s.nome}</h3><ul class="topics">`;
+          html += `<h3>${s.nome}</h3><ul class="topics">`;
           for (const t of s.topicos) {
             total++;
-            const { data } = await sb
+            const q = await sb
               .from("estudo")
               .select("estudado")
               .eq("user_id", user.id)
               .eq("topico", t)
               .single();
+            const ok = q.data?.estudado === true;
+            if (ok) { done++; done++; }
 
-            const estudado = data?.estudado === true;
-            if (estudado) feitos++;
-
-            bloco += `<li class="topic ${estudado ? "done" : ""}" data-topico="${t}">${t}</li>`;
+            html += `<li class="topic ${ok ? "done" : ""}" data-topico="${t}">${t}</li>`;
           }
-          bloco += `</ul>`;
+          html += `</ul>`;
         }
       } else if (d.topicos) {
-        bloco += `<ul class="topics">`;
+        html += `<ul class="topics">`;
         for (const t of d.topicos) {
           total++;
-          const { data } = await sb
+          const q = await sb
             .from("estudo")
             .select("estudado")
             .eq("user_id", user.id)
             .eq("topico", t)
             .single();
-
-          const estudado = data?.estudado === true;
-          if (estudado) feitos++;
-
-          bloco += `<li class="topic ${estudado ? "done" : ""}" data-topico="${t}">${t}</li>`;
+          const ok = q.data?.estudado === true;
+          if (ok) done++;
+          html += `<li class="topic ${ok ? "done" : ""}" data-topico="${t}">${t}</li>`;
         }
-        bloco += `</ul>`;
+        html += `</ul>`;
       }
 
-      bloco += `</div>`;
-      discContainer.innerHTML += bloco;
+      html += `</div></div>`;
+      discBox.innerHTML += html;
     }
 
-    const pct = total ? Math.round((feitos / total) * 100) : 0;
-    overallBar.style.width = pct + "%";
-    overallPct.textContent = pct;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    if (bar) bar.style.width = pct + "%";
+    if (pctEl) pctEl.textContent = pct;
   }
 
-  // ============ LOGIN ============
-  btnLogin.onclick = async () => {
-    authErr.classList.add("hide");
-    try {
-      const { data, error } = await sb.auth.signInWithPassword({
-        email: emailInput.value.trim(),
-        password: passInput.value.trim()
-      });
-
-      if (error) {
-        authErr.textContent = error.message;
-        authErr.classList.remove("hide");
-        return;
-      }
-
-      currentUser = data.user;
-      userEmailEl.textContent = currentUser.email;
-      authCard.classList.add("hide");
-      appSection.classList.remove("hide");
-
-      await renderUI(currentUser);
-    } catch (e) {
-      authErr.textContent = "Falha inesperada no login.";
-      authErr.classList.remove("hide");
-      console.error(e);
+  // Login sem checagem de tabela no client (evita 400/404)
+  loginBtn.onclick = async () => {
+    errEl.classList.add("hide");
+    const { data: d, error } = await sb.auth.signInWithPassword({
+      email: emailIn.value.trim(),
+      password: passIn.value.trim()
+    });
+    if (error) {
+      errEl.textContent = "Login inválido ou projeto não permite auth.";
+      errEl.classList.remove("hide");
+      return;
     }
-  };
-
-  // ============ SIGNUP ============
-  btnSignup.onclick = async () => {
-    try {
-      const { error } = await sb.auth.signUp({
-        email: emailInput.value.trim(),
-        password: passInput.value.trim()
-      });
-      if (error) alert(error.message);
-      else alert("Conta criada. Confirme o e-mail antes de entrar.");
-    } catch (e) {
-      alert("Falha ao criar conta.");
-      console.error(e);
-    }
-  };
-
-  // ============ MARCAR ESTUDO ============
-  document.addEventListener("click", async (e) => {
-    const item = e.target.closest(".topic");
-    if (!item || !currentUser) return;
-
-    const topico = item.getAttribute("data-topico");
-    const novoEstado = !item.classList.contains("done");
-
-    try {
-      await sb.from("estudo").upsert({
-        user_id: currentUser.id,
-        topico,
-        estudado: novoEstado
-      });
-      item.classList.toggle("done", novoEstado);
-      atualizarProgresso();
-    } catch (err) {
-      console.error("Erro ao salvar estudo:", err);
-    }
-  });
-
-  function atualizarProgresso() {
-    const feitos = document.querySelectorAll(".topic.done").length;
-    const total = document.querySelectorAll(".topic").length;
-    const pct = total ? Math.round((feitos / total) * 100) : 0;
-    overallBar.style.width = pct + "%";
-    overallPct.textContent = pct;
-  }
-
-  // ============ LOGOUT ============
-  btnLogout.onclick = () => location.reload();
-
-  // ============ AUTO LOGIN SE SESSÃO ATIVA ============
-  const sess = await sb.auth.getSession();
-  if (sess.data.session?.user) {
-    currentUser = sess.data.session.user;
-    userEmailEl.textContent = currentUser.email;
+    user = d.user;
+    emailEl.textContent = user.email;
     authCard.classList.add("hide");
     appSection.classList.remove("hide");
-    await renderUI(currentUser);
+    await draw(user);
+  };
+
+  // Persistência ao marcar estudo
+  document.addEventListener("click", async (e) => {
+    const li = e.target.closest(".topic");
+    if (!li || !user) return;
+    const top = li.getAttribute("data-topico") || li.textContent;
+    const state = !li.classList.contains("done");
+    try {
+      await sb.from("estudo").upsert({ user_id: user.id, topico: top, estudado: state });
+      li.classList.toggle("done", state);
+      // continuar fluxo: clicar próximo item se existir
+      const next = li.nextElementSibling;
+      if (next?.classList.contains("topic")) next.click();
+    } catch {}
+  });
+
+  logoutBtn.onclick = () => location.reload();
+
+  // Auto-login se sessão ativa
+  const s = await sb.auth.getSession();
+  if (s.data.session?.user) {
+    user = s.data.session.user;
+    emailEl.textContent = user.email;
+    authCard.classList.add("hide");
+    appSection.classList.remove("hide");
+    await draw(user);
   }
 });
