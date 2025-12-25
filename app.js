@@ -1,12 +1,13 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
-  // Proteção: garante que a chave foi carregada antes de criar o cliente
-  if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
-    console.error("Chave do Supabase não encontrada no window. Verifique config.js");
-    alert("Erro: chave do Supabase não carregada.");
+  // Garante que a key foi carregada do config.js
+  if (typeof window.SUPABASE_URL === "undefined" || typeof window.SUPABASE_ANON_KEY === "undefined") {
+    console.error("Config do Supabase não carregada.");
+    alert("Erro de configuração: chave não carregada.");
     return;
   }
 
+  // Inicializa o cliente corretamente (única declaração!)
   const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
   const authCard = document.getElementById("authCard");
@@ -23,18 +24,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const USER_UUID = "e98f4067-8f32-4596-8fe5-7a673136217f";
 
-  async function carregarEdital() {
-    try {
-      const r = await fetch("edital_auditor.json");
-      if (!r.ok) throw new Error("Erro HTTP: " + r.status);
-      return await r.json();
-    } catch (e) {
-      console.error("Erro ao carregar edital:", e);
-      if (discContainer) discContainer.textContent = "Erro ao carregar edital.";
-      return null;
-    }
-  }
-
   function atualizarProgresso() {
     const done = document.querySelectorAll(".topic input:checked").length;
     const total = document.querySelectorAll(".topic input[type='checkbox']").length;
@@ -50,10 +39,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         topico,
         estudado: estado
       });
-      if (error) console.error("Erro upsert:", error.message);
+      if (error) console.error("Erro ao salvar:", error.message);
     } catch (e) {
-      console.error("Erro salvarMarcacao:", e);
+      console.error("Erro inesperado:", e);
     }
+  }
+
+  function injetarCheckboxes() {
+    document.querySelectorAll(".topic").forEach(li => {
+      if (!li.querySelector("input[type='checkbox']")) {
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.className = "mr-2";
+        cb.checked = li.classList.contains("done");
+        cb.addEventListener("change", () => marcarTopico(li, cb.checked));
+        li.prepend(cb);
+      }
+    });
   }
 
   async function carregarMarcados() {
@@ -63,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         .eq("user_id", USER_UUID);
 
       if (error) {
-        console.error("Erro select:", error.message);
+        console.error("Erro ao restaurar:", error.message);
         return;
       }
 
@@ -80,15 +82,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  async function renderizar() {
-    const edital = await carregarEdital();
-    if (!edital || !discContainer) return;
-
+  async function renderChecklist(edital) {
+    if (!discContainer || !edital) return;
     discContainer.innerHTML = "";
 
     for (const d of edital.disciplinas) {
       let bloco = `<div class="card section"><h2>${d.nome}</h2>`;
-
       if (d.subsecoes) {
         for (const s of d.subsecoes) {
           bloco += `<h3>${s.nome}</h3><ul class="topics">`;
@@ -110,21 +109,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         bloco += `</ul>`;
       }
-
       bloco += `</div>`;
       discContainer.innerHTML += bloco;
     }
 
-    // Eventos de clique para marcar/desmarcar
-    document.querySelectorAll(".topic").forEach(li => {
-      const cb = li.querySelector("input");
-      li.addEventListener("click", async (ev) => {
-        if (ev.target !== cb) cb.checked = !cb.checked;
-        await salvarMarcacao(li.getAttribute("data-topico"), cb.checked);
-        atualizarProgresso();
-      });
-    });
-
+    injetarCheckboxes();
     await carregarMarcados();
   }
 
@@ -136,7 +125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (error) {
       console.error("Erro login:", error.message);
-      alert("Login falhou. Verifique e-mail/senha ou confirmação.");
+      alert("Login falhou. Confirme o e-mail e a senha.");
       return;
     }
 
@@ -147,7 +136,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     appSection.style.display = "block";
     btnLogout.classList.remove("hide");
 
-    await renderizar();
+    const edital = await sb.from("disciplinas").select("*").limit(1);
+    await renderChecklist(editalJSON);
   }
 
   btnLogin.addEventListener("click", login);
@@ -160,5 +150,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   btnLogout.addEventListener("click", () => location.reload());
-  await renderizar();
+
 });
