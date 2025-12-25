@@ -1,12 +1,280 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="utf-8">
-  <title>Controle de Estudos — Auditor Fiscal</title>
+  <title>Controle de Estudos – Auditor Fiscal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
+  
+  <style>
+/* Variáveis de cores */
+:root {
+  --bg: #0b0f14;
+  --card: #111827;
+  --muted: #9ca3af;
+  --text: #e5e7eb;
+  --line: #1f2937;
+  --accent: #22c55e;
+  --accent2: #3b82f6;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  background: linear-gradient(180deg, #070a0f, #0b0f14);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 16px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(17, 24, 39, 0.65);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar h1 {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.topbar #userEmail {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: #0f172a;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn.primary {
+  background: var(--accent2);
+  border-color: transparent;
+  color: white;
+}
+
+.btn.danger {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.card {
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  margin-bottom: 16px;
+}
+
+input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #0b1220;
+  color: var(--text);
+  font-size: 14px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent2);
+}
+
+input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.alert {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.alert.success {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
+}
+
+.progress {
+  width: 100%;
+  height: 14px;
+  background: #0b1220;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+
+.bar {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.section {
+  margin-top: 16px;
+}
+
+.section h2 {
+  font-size: 18px;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.disc-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.group {
+  margin-top: 16px;
+  border-top: 1px dashed var(--line);
+  padding-top: 16px;
+}
+
+.group h3 {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.topics {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.topic {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(15, 23, 42, 0.55);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+}
+
+.topic:hover {
+  filter: brightness(1.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.topic .check {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.topic .text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.topic.done {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.10);
+}
+
+.topic.done .text {
+  text-decoration: line-through;
+  color: #bbf7d0;
+  opacity: 0.7;
+}
+
+.hide {
+  display: none !important;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 13px;
+}
+
+#authCard {
+  max-width: 400px;
+  margin: 40px auto;
+}
+
+#authCard .btn {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .container {
+    padding: 0 12px;
+  }
+  
+  .card {
+    padding: 16px;
+  }
+}
+  </style>
 </head>
 <body>
 
@@ -18,7 +286,8 @@
 
 <main class="container">
   <section id="authCard" class="card">
-    <input id="email" placeholder="Email">
+    <h2 style="margin-bottom: 16px;">Login</h2>
+    <input id="email" placeholder="Email" type="email">
     <input id="password" type="password" placeholder="Senha">
     <button id="btnLogin" class="btn primary">Entrar</button>
     <button id="btnSignup" class="btn">Criar conta</button>
@@ -32,7 +301,262 @@
   </section>
 </main>
 
-<script src="app.js"></script>
+<script>
+// ==========================================
+// CONFIGURAÇÃO - SUBSTITUA COM SUAS CHAVES
+// ==========================================
+const SUPABASE_URL = "https://seuprojetoaqui.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...SuaChaveAqui";
+
+// ==========================================
+// APLICAÇÃO
+// ==========================================
+document.addEventListener("DOMContentLoaded", async () => {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const authCard = document.getElementById("authCard");
+  const appSection = document.getElementById("app");
+  const emailLabel = document.getElementById("userEmail");
+  const btnLogin = document.getElementById("btnLogin");
+  const btnSignup = document.getElementById("btnSignup");
+  const btnLogout = document.getElementById("btnLogout");
+  const emailInput = document.getElementById("email");
+  const passInput = document.getElementById("password");
+  const discContainer = document.getElementById("discContainer");
+  const overallBar = document.getElementById("overallBar");
+  const overallPct = document.getElementById("overallPct");
+  const authErr = document.getElementById("authErr");
+
+  let usuarioAtual = null;
+  let editalJSON = null;
+
+  async function carregarEdital() {
+    try {
+      const response = await fetch('edital_auditor.json');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      editalJSON = await response.json();
+      console.log("Edital carregado:", editalJSON.disciplinas.length, "disciplinas");
+    } catch (e) {
+      console.error("Erro ao carregar edital:", e);
+      alert("Erro ao carregar dados do edital. Verifique se o arquivo edital_auditor.json está na mesma pasta.");
+    }
+  }
+
+  function atualizarProgresso() {
+    const done = document.querySelectorAll(".topic.done").length;
+    const total = document.querySelectorAll(".topic").length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    
+    if (overallBar) overallBar.style.width = pct + "%";
+    if (overallPct) overallPct.textContent = pct;
+  }
+
+  async function salvarMarcacao(topico, estado) {
+    if (!usuarioAtual) return;
+    
+    try {
+      const { error } = await sb.from("estudo").upsert({
+        user_id: usuarioAtual.id,
+        topico,
+        estudado: estado
+      });
+      
+      if (error) console.error("Erro ao salvar:", error.message);
+    } catch (e) {
+      console.error("Erro inesperado:", e);
+    }
+  }
+
+  async function marcarTopico(elemento, checked) {
+    const topico = elemento.getAttribute("data-topico");
+    elemento.classList.toggle("done", checked);
+    await salvarMarcacao(topico, checked);
+    atualizarProgresso();
+  }
+
+  async function carregarMarcados() {
+    if (!usuarioAtual) return;
+    
+    try {
+      const { data, error } = await sb.from("estudo")
+        .select("topico, estudado")
+        .eq("user_id", usuarioAtual.id);
+
+      if (error) {
+        console.error("Erro ao restaurar:", error.message);
+        return;
+      }
+
+      for (const r of data || []) {
+        const li = document.querySelector(`.topic[data-topico="${CSS.escape(r.topico)}"]`);
+        const cb = li?.querySelector("input[type='checkbox']");
+        
+        if (cb) cb.checked = r.estudado;
+        if (li) li.classList.toggle("done", r.estudado);
+      }
+
+      atualizarProgresso();
+    } catch (e) {
+      console.error("Erro carregarMarcados:", e);
+    }
+  }
+
+  async function renderChecklist(edital) {
+    if (!discContainer || !edital) return;
+    
+    discContainer.innerHTML = "";
+
+    for (const d of edital.disciplinas) {
+      let bloco = `
+        <div class="card section">
+          <div class="disc-head">
+            <div>
+              <h2>${d.nome}</h2>
+              <p class="muted small">${d.questoes} questões</p>
+            </div>
+          </div>
+      `;
+
+      if (d.subsecoes) {
+        for (const s of d.subsecoes) {
+          bloco += `
+            <div class="group">
+              <h3>${s.nome}</h3>
+              <ul class="topics">
+          `;
+          for (const t of s.topicos) {
+            bloco += `
+              <li class="topic" data-topico="${t}">
+                <input type="checkbox" class="check">
+                <span class="text">${t}</span>
+              </li>
+            `;
+          }
+          bloco += `</ul></div>`;
+        }
+      } else if (d.topicos) {
+        bloco += `<ul class="topics">`;
+        for (const t of d.topicos) {
+          bloco += `
+            <li class="topic" data-topico="${t}">
+              <input type="checkbox" class="check">
+              <span class="text">${t}</span>
+            </li>
+          `;
+        }
+        bloco += `</ul>`;
+      }
+
+      bloco += `</div>`;
+      discContainer.innerHTML += bloco;
+    }
+
+    document.querySelectorAll(".topic").forEach(li => {
+      const cb = li.querySelector("input[type='checkbox']");
+      cb.addEventListener("change", () => marcarTopico(li, cb.checked));
+    });
+
+    await carregarMarcados();
+  }
+
+  async function login() {
+    const email = emailInput.value.trim();
+    const password = passInput.value.trim();
+
+    if (!email || !password) {
+      mostrarErro("Preencha email e senha");
+      return;
+    }
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      console.error("Erro login:", error.message);
+      mostrarErro("Login falhou. Verifique email e senha.");
+      return;
+    }
+
+    usuarioAtual = data.user;
+    mostrarApp();
+  }
+
+  async function signup() {
+    const email = emailInput.value.trim();
+    const password = passInput.value.trim();
+
+    if (!email || !password) {
+      mostrarErro("Preencha email e senha");
+      return;
+    }
+
+    if (password.length < 6) {
+      mostrarErro("Senha deve ter no mínimo 6 caracteres");
+      return;
+    }
+
+    const { error } = await sb.auth.signUp({ email, password });
+
+    if (error) {
+      console.error("Erro signup:", error.message);
+      mostrarErro("Erro ao criar conta: " + error.message);
+      return;
+    }
+
+    mostrarErro("Conta criada! Verifique seu email para confirmar.", false);
+  }
+
+  function mostrarErro(msg, isError = true) {
+    if (authErr) {
+      authErr.textContent = msg;
+      authErr.className = isError ? "alert" : "alert success";
+      authErr.classList.remove("hide");
+    }
+  }
+
+  async function mostrarApp() {
+    emailLabel.textContent = usuarioAtual.email;
+    authCard.style.display = "none";
+    appSection.classList.remove("hide");
+    btnLogout.classList.remove("hide");
+    
+    // Garantir que o edital está carregado antes de renderizar
+    if (!editalJSON) {
+      await carregarEdital();
+    }
+    
+    await renderChecklist(editalJSON);
+  }
+
+  async function logout() {
+    await sb.auth.signOut();
+    location.reload();
+  }
+
+  btnLogin.addEventListener("click", login);
+  btnSignup.addEventListener("click", signup);
+  btnLogout.addEventListener("click", logout);
+
+  emailInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") login();
+  });
+  passInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") login();
+  });
+
+  // Carregar edital assim que a página abre
+  await carregarEdital();
+
+  // Verificar se já tem sessão ativa
+  const { data: { session } } = await sb.auth.getSession();
+  
+  if (session) {
+    usuarioAtual = session.user;
+    mostrarApp();
+  }
+});
+</script>
 
 </body>
 </html>
