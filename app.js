@@ -1,54 +1,56 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  // Inicializar cliente Supabase
+  // ============ SUPABASE ============
   const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-  // Elementos da UI
+  // ============ ELEMENTOS DA UI ============
   const authCard = document.getElementById("authCard");
   const appSection = document.getElementById("app");
-  const userEmail = document.getElementById("userEmail");
+  const userEmailEl = document.getElementById("userEmail");
   const discContainer = document.getElementById("discContainer");
   const overallBar = document.getElementById("overallBar");
   const overallPct = document.getElementById("overallPct");
-  const email = document.getElementById("email");
-  const password = document.getElementById("password");
+
+  const emailInput = document.getElementById("email");
+  const passInput = document.getElementById("password");
   const btnLogin = document.getElementById("btnLogin");
   const btnSignup = document.getElementById("btnSignup");
   const btnLogout = document.getElementById("btnLogout");
+  const authErr = document.getElementById("authErr");
 
   let currentUser = null;
 
-  // =============== CARREGAR EDITAL JSON LOCAL ===============
+  // ============ CARREGAR EDITAL JSON ============
   async function carregarEdital() {
     try {
-      const r = await fetch("edital_auditor.json");
-      return await r.json();
+      const res = await fetch("edital_auditor.json");
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return await res.json();
     } catch (e) {
-      console.error("Erro ao carregar edital JSON:", e);
+      console.error("Falha ao carregar JSON:", e);
       return null;
     }
   }
 
   const edital = await carregarEdital();
   if (!edital) {
-    discContainer.textContent = "Erro: não foi possível carregar o edital.";
+    discContainer.textContent = "Erro ao carregar edital.";
     return;
   }
 
-  // =============== RENDERIZAR DISCIPLINAS E TÓPICOS ===============
+  // ============ RENDERIZAR MATÉRIAS E TÓPICOS ============
   async function renderUI(user) {
     discContainer.innerHTML = "";
-
-    let totalTopicos = 0;
-    let totalEstudados = 0;
+    let total = 0;
+    let feitos = 0;
 
     for (const d of edital.disciplinas) {
-      let bloco = `<div class="card section"><div class="disc-head"><strong>${d.nome}</strong></div>`;
+      let bloco = `<div class="card section"><h2>${d.nome}</h2>`;
 
       if (d.subsecoes) {
         for (const s of d.subsecoes) {
-          bloco += `<div class="group"><h3>${s.nome}</h3><ul class="topics">`;
+          bloco += `<h3>${s.nome}</h3><ul class="topics">`;
           for (const t of s.topicos) {
-            totalTopicos++;
+            total++;
             const { data } = await sb
               .from("estudo")
               .select("estudado")
@@ -57,18 +59,16 @@ document.addEventListener("DOMContentLoaded", async () => {
               .single();
 
             const estudado = data?.estudado === true;
-            if (estudado) totalEstudados++;
+            if (estudado) feitos++;
 
-            bloco += `<li class="topic ${estudado ? "done" : ""}" data-topico="${t}">
-                        <span class="text">${t}</span>
-                      </li>`;
+            bloco += `<li class="topic ${estudado ? "done" : ""}" data-topico="${t}">${t}</li>`;
           }
-          bloco += `</ul></div>`;
+          bloco += `</ul>`;
         }
       } else if (d.topicos) {
         bloco += `<ul class="topics">`;
         for (const t of d.topicos) {
-          totalTopicos++;
+          total++;
           const { data } = await sb
             .from("estudo")
             .select("estudado")
@@ -77,57 +77,66 @@ document.addEventListener("DOMContentLoaded", async () => {
             .single();
 
           const estudado = data?.estudado === true;
-          if (estudado) totalEstudados++;
+          if (estudado) feitos++;
 
-          bloco += `<li class="topic ${estudado ? "done" : ""}" data-topico="${t}">
-                      <span class="text">${t}</span>
-                    </li>`;
+          bloco += `<li class="topic ${estudado ? "done" : ""}" data-topico="${t}">${t}</li>`;
         }
         bloco += `</ul>`;
       }
 
-      bloco += `</div></div>`;
+      bloco += `</div>`;
       discContainer.innerHTML += bloco;
     }
 
-    const pct = totalTopicos ? Math.round((totalEstudados / totalTopicos) * 100) : 0;
+    const pct = total ? Math.round((feitos / total) * 100) : 0;
     overallBar.style.width = pct + "%";
     overallPct.textContent = pct;
   }
 
-  // =============== LOGIN ===============
+  // ============ LOGIN ============
   btnLogin.onclick = async () => {
-    const { data, error } = await sb.auth.signInWithPassword({
-      email: email.value.trim(),
-      password: password.value.trim()
-    });
+    authErr.classList.add("hide");
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: emailInput.value.trim(),
+        password: passInput.value.trim()
+      });
 
-    if (error) {
-      console.error("Erro login Supabase:", error);
-      alert("Erro 400: usuário ou senha inválidos, ou projeto mal configurado.");
-      return;
+      if (error) {
+        authErr.textContent = error.message;
+        authErr.classList.remove("hide");
+        return;
+      }
+
+      currentUser = data.user;
+      userEmailEl.textContent = currentUser.email;
+      authCard.classList.add("hide");
+      appSection.classList.remove("hide");
+
+      await renderUI(currentUser);
+    } catch (e) {
+      authErr.textContent = "Falha inesperada no login.";
+      authErr.classList.remove("hide");
+      console.error(e);
     }
-
-    currentUser = data.user;
-    userEmail.textContent = currentUser.email;
-    authCard.classList.add("hide");
-    appSection.classList.remove("hide");
-    btnLogout.classList.remove("hide");
-
-    await renderUI(currentUser);
   };
 
-  // =============== SIGNUP ===============
+  // ============ SIGNUP ============
   btnSignup.onclick = async () => {
-    const { error } = await sb.auth.signUp({
-      email: email.value.trim(),
-      password: password.value.trim()
-    });
-    if (error) alert("Erro ao criar conta: " + error.message);
-    else alert("Conta criada! Confirme seu e-mail antes de entrar.");
+    try {
+      const { error } = await sb.auth.signUp({
+        email: emailInput.value.trim(),
+        password: passInput.value.trim()
+      });
+      if (error) alert(error.message);
+      else alert("Conta criada. Confirme o e-mail antes de entrar.");
+    } catch (e) {
+      alert("Falha ao criar conta.");
+      console.error(e);
+    }
   };
 
-  // =============== MARCAR ESTUDO AO CLICAR ===============
+  // ============ MARCAR ESTUDO ============
   document.addEventListener("click", async (e) => {
     const item = e.target.closest(".topic");
     if (!item || !currentUser) return;
@@ -136,18 +145,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const novoEstado = !item.classList.contains("done");
 
     try {
-      const { error } = await sb.from("estudo").upsert({
+      await sb.from("estudo").upsert({
         user_id: currentUser.id,
-        topico: topico,
+        topico,
         estudado: novoEstado
       });
-
-      if (!error) {
-        item.classList.toggle("done", novoEstado);
-        atualizarProgresso();
-      }
+      item.classList.toggle("done", novoEstado);
+      atualizarProgresso();
     } catch (err) {
-      console.error("Erro ao salvar tópico estudado:", err);
+      console.error("Erro ao salvar estudo:", err);
     }
   });
 
@@ -159,17 +165,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     overallPct.textContent = pct;
   }
 
-  // Logout apenas recarrega a página
+  // ============ LOGOUT ============
   btnLogout.onclick = () => location.reload();
 
-  // Auto-login se sessão ativa
+  // ============ AUTO LOGIN SE SESSÃO ATIVA ============
   const sess = await sb.auth.getSession();
   if (sess.data.session?.user) {
     currentUser = sess.data.session.user;
-    userEmail.textContent = currentUser.email;
+    userEmailEl.textContent = currentUser.email;
     authCard.classList.add("hide");
     appSection.classList.remove("hide");
-    btnLogout.classList.remove("hide");
     await renderUI(currentUser);
   }
 });
