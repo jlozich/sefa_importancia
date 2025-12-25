@@ -1,23 +1,19 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_SERVICE_KEY);
+const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
+document.addEventListener("DOMContentLoaded", async () => {
   const authCard = document.getElementById("authCard");
   const appSection = document.getElementById("app");
   const emailLabel = document.getElementById("userEmail");
-  const emailInput = document.getElementById("email");
-  const passInput = document.getElementById("password");
   const btnLogin = document.getElementById("btnLogin");
   const btnSignup = document.getElementById("btnSignup");
   const btnLogout = document.getElementById("btnLogout");
-  const authErr = document.getElementById("authErr");
+  const emailInput = document.getElementById("email");
+  const passInput = document.getElementById("password");
   const discContainer = document.getElementById("discContainer");
   const overallBar = document.getElementById("overallBar");
   const overallPct = document.getElementById("overallPct");
 
   const USER_UUID = "e98f4067-8f32-4596-8fe5-7a673136217f";
-
-  let editalJSON = null;
-  let renderEmAndamento = false;
 
   async function carregarEdital() {
     try {
@@ -25,171 +21,132 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!r.ok) throw new Error("Erro HTTP: " + r.status);
       return await r.json();
     } catch (e) {
-      console.error("Erro ao carregar edital:", e);
-      if (discContainer) discContainer.textContent = "Erro ao carregar edital.";
+      console.error(e);
+      discContainer.textContent = "Erro ao carregar edital.";
       return null;
     }
   }
 
-  function injetarCheckboxes() {
-    document.querySelectorAll(".topic").forEach(li => {
-      if (!li.querySelector("input[type='checkbox']")) {
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.className = "mr-2";
-        cb.checked = li.classList.contains("done");
-        cb.addEventListener("change", () => marcarTopico(li, cb.checked));
-        li.prepend(cb);
-      }
-    });
-  }
-
   function atualizarProgresso() {
-    const marcados = document.querySelectorAll(".topic.done").length;
-    const total = document.querySelectorAll(".topic").length;
-    const pct = total ? Math.round((marcados / total) * 100) : 0;
-
-    if (overallBar) overallBar.style.width = pct + "%";
-    if (overallPct) overallPct.textContent = pct + "%";
+    const done = document.querySelectorAll(".topic input:checked").length;
+    const total = document.querySelectorAll(".topic input[type='checkbox']").length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    overallBar.style.width = pct + "%";
+    overallPct.textContent = pct;
   }
 
   async function salvarMarcacao(topico, estado) {
     try {
-      const { error } = await supabase
-        .from("estudo")
-        .upsert({ user_id: USER_UUID, topico, estudado: estado });
-
-      if (error?.code === "23505") {
-        console.warn("Registro já existe, atualizando...");
-      } else if (error) {
-        console.error("Erro ao salvar marcação:", error);
-      }
+      const { error } = await sb.from("estudo").upsert({
+        user_id: USER_UUID,
+        topico,
+        estudado: estado
+      });
+      if (error) console.error(error);
     } catch (e) {
-      console.error("Erro inesperado ao salvar:", e);
+      console.error(e);
     }
   }
 
-  async function marcarTopico(el, estado) {
-    const topico = el.getAttribute("data-topico");
-    el.classList.toggle("done", estado);
-    await salvarMarcacao(topico, estado);
-    atualizarProgresso();
-  }
-
-  async function carregarMarcadosDoBanco() {
+  async function carregarMarcados() {
     try {
-      const { data, error } = await supabase
-        .from("estudo")
+      const { data, error } = await sb.from("estudo")
         .select("topico, estudado")
         .eq("user_id", USER_UUID);
 
       if (error) {
-        console.error("Erro ao restaurar marcações:", error);
+        console.error(error);
         return;
       }
 
       for (const r of data || []) {
-        const el = document.querySelector(`.topic[data-topico="${CSS.escape(r.topico)}"]`);
-        if (!el) continue;
-        r.estudado ? el.classList.add("done") : el.classList.remove("done");
-        const cb = el.querySelector("input[type='checkbox']");
+        const cb = document.querySelector(`.topic[data-topico="${CSS.escape(r.topico)}"] input`);
         if (cb) cb.checked = r.estudado;
       }
 
       atualizarProgresso();
     } catch (e) {
-      console.error("Erro inesperado ao carregar marcados:", e);
+      console.error(e);
     }
   }
 
-  async function renderChecklist(edital) {
-    if (renderEmAndamento || !discContainer) return;
-    renderEmAndamento = true;
+  async function renderizar() {
+    const edital = await carregarEdital();
+    if (!edital) return;
 
-    try {
-      discContainer.innerHTML = "";
+    discContainer.innerHTML = "";
 
-      for (const disc of edital.disciplinas) {
-        let bloco = `<div class="card section"><h2>${disc.nome}</h2>`;
+    for (const d of edital.disciplinas) {
+      let bloco = `<div class="card section"><h2>${d.nome}</h2>`;
 
-        if (disc.subsecoes) {
-          for (const sub of disc.subsecoes) {
-            bloco += `<h3>${sub.nome}</h3><ul class="topics">`;
-            for (const t of sub.topicos) {
-              bloco += `<li class="topic ${t.estudado ? "done" : ""}" data-topico="${t}">${t}</li>`;
-            }
-            bloco += `</ul>`;
-          }
-        } else if (disc.topicos) {
-          bloco += `<ul class="topics">`;
-          for (const t of disc.topicos) {
-            bloco += `<li class="topic ${t.estudado ? "done" : ""}" data-topico="${t}">${t}</li>`;
+      if (d.subsecoes) {
+        for (const s of d.subsecoes) {
+          bloco += `<h3>${s.nome}</h3><ul class="topics">`;
+          for (const t of s.topicos) {
+            bloco += `<li class="topic flex items-center" data-topico="${t}">
+              <input type="checkbox" class="mr-2">
+              <span>${t}</span>
+            </li>`;
           }
           bloco += `</ul>`;
         }
-
-        bloco += `</div>`;
-        discContainer.innerHTML += bloco;
+      } else if (d.topicos) {
+        bloco += `<ul class="topics">`;
+        for (const t of d.topicos) {
+          bloco += `<li class="topic flex items-center" data-topico="${t}">
+            <input type="checkbox" class="mr-2">
+            <span>${t}</span>
+          </li>`;
+        }
+        bloco += `</ul>`;
       }
 
-      injetarCheckboxes();
-      await carregarMarcadosDoBanco();
-      atualizarProgresso();
-    } catch (e) {
-      console.error("Erro ao renderizar checklist:", e);
-    } finally {
-      renderEmAndamento = false;
+      bloco += `</div>`;
+      discContainer.innerHTML += bloco;
     }
+
+    document.querySelectorAll(".topic").forEach(li => {
+      const cb = li.querySelector("input");
+      li.addEventListener("click", async (ev) => {
+        if (ev.target !== cb) cb.checked = !cb.checked;
+        await salvarMarcacao(li.getAttribute("data-topico"), cb.checked);
+        atualizarProgresso();
+      });
+    });
+
+    await carregarMarcados();
   }
 
-  // LOGIN
-  btnLogin.addEventListener("click", async () => {
-    const { error } = await supabase.auth.signInWithPassword({
+  async function login() {
+    const { data, error } = await sb.auth.signInWithPassword({
       email: emailInput.value.trim(),
       password: passInput.value.trim()
     });
 
-    if (error && authErr) {
-      authErr.textContent = "Erro ao fazer login.";
-      authErr.classList.remove("hide");
+    if (error) {
+      alert("Login falhou");
       return;
     }
 
-    emailLabel.textContent = emailInput.value.trim();
+    usuarioAtual = data.user;
+    emailLabel.textContent = usuarioAtual.email;
+
     authCard.style.display = "none";
     appSection.style.display = "block";
+    btnLogout.classList.remove("hide");
 
-    editalJSON = await carregarEdital();
-    if (editalJSON) {
-      await renderChecklist(editalJSON);
-      atualizarProgresso();
-      await carregarMarcadosDoBanco();
-    }
-  });
+    await renderizar();
+  }
 
-  // SIGNUP
+  btnLogin.addEventListener("click", login);
   btnSignup.addEventListener("click", async () => {
-    const { error } = await supabase.auth.signUp({
+    const { error } = await sb.auth.signUp({
       email: emailInput.value.trim(),
       password: passInput.value.trim()
     });
-
-    if (error && authErr) {
-      authErr.textContent = "Erro ao criar conta.";
-      authErr.classList.remove("hide");
-    }
+    if (error) alert("Erro ao criar conta");
   });
 
-  // LOGOUT
   btnLogout.addEventListener("click", () => location.reload());
-
-  // AUTO-LOGIN SESSION
-  const s = await supabase.auth.getSession();
-  if (s.data.session?.user) {
-    emailLabel.textContent = s.data.session.user.email;
-    authCard.style.display = "none";
-    appSection.style.display = "block";
-    editalJSON = await carregarEdital();
-    if (editalJSON) await renderChecklist(editalJSON);
-  }
+  await renderizar();
 });
