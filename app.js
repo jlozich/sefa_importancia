@@ -30,12 +30,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  function injetarCheckboxes() {
+    document.querySelectorAll(".topic").forEach(li => {
+      if (!li.querySelector("input[type='checkbox']")) {
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.className = "mr-2";
+        cb.checked = li.classList.contains("done");
+        cb.addEventListener("change", () => marcarTopico(li, cb.checked));
+        li.prepend(cb);
+      }
+    });
+  }
+
   function atualizarProgresso() {
     const marcados = document.querySelectorAll(".topic.done").length;
     const total = document.querySelectorAll(".topic").length;
     const pct = total ? Math.round((marcados / total) * 100) : 0;
     if (overallBar) overallBar.style.width = pct + "%";
-    if (overallPct) overallPct.textContent = pct + "%";
+    if (overallPct) overallPct.textContent = pct;
   }
 
   async function salvarMarcacao(topico, estado) {
@@ -48,22 +61,33 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     } catch (e) {
       console.error("Erro ao salvar marcação:", e);
-      if (authErr) {
-        authErr.textContent = "Erro ao salvar dados.";
-        authErr.classList.remove("hide");
-      }
     }
   }
 
-  async function marcarTopico(el) {
+  async function marcarTopico(el, estado) {
     const topico = el.getAttribute("data-topico");
-    const novoEstado = !el.classList.contains("done");
-    el.classList.toggle("done", novoEstado);
-    await salvarMarcacao(topico, novoEstado);
+    el.classList.toggle("done", estado);
+    await salvarMarcado(topico, estado);
     atualizarProgresso();
   }
 
-  async function renderizarChecklist(edital) {
+  async function carregarMarcadosDoBanco() {
+    if (!usuarioAtual) return;
+    try {
+      const { data } = await sb.from("estudo")
+        .select("topico, estudado")
+        .eq("user_id", usuarioAtual.id);
+      for (const r of data || []) {
+        const el = document.querySelector(`.topic[data-topico="${CSS.escape(r.topico)}"]`);
+        if (el && r.estudado) el.classList.add("done");
+        else if (el) el.classList.remove("done");
+      }
+    } catch (e) {
+      console.error("Erro ao carregar tópicos marcados:", e);
+    }
+  }
+
+  async function renderChecklist(edital) {
     if (renderEmAndamento || !discContainer) return;
     renderEmAndamento = true;
 
@@ -93,12 +117,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         discContainer.innerHTML += bloco;
       }
 
-      // Adiciona eventos de clique
-      document.querySelectorAll(".topic").forEach(el => {
-        el.addEventListener("click", () => marcarTopico(el));
-      });
+      // Agora que o DOM foi criado, injeta checkboxes
+      injetarCheckboxes();
 
-      // Carrega marcados do banco e aplica na UI
+      // Restaura estado do banco
       await carregarMarcadosDoBanco();
       atualizarProgresso();
     } catch (e) {
@@ -106,32 +128,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     } finally {
       renderEmAndamento = false;
     }
-  }
-
-  async function carregarMarcadosDoBanco() {
-    if (!usuarioAtual) return;
-    try {
-      const { data } = await sb.from("estudo")
-        .select("topico, estudado")
-        .eq("user_id", usuarioAtual.id);
-
-      for (const r of data || []) {
-        const el = document.querySelector(`.topic[data-topico="${CSS.escape(r.topico)}"]`);
-        if (el && r.estudado) {
-          el.classList.add("done");
-        }
-      }
-    } catch (e) {
-      console.error("Erro ao carregar tópicos marcados:", e);
-      if (authErr) {
-        authErr.textContent = "Erro ao carregar dados do banco.";
-        authErr.classList.remove("hide");
-      }
-    }
-  }
-
-  async function carregarMarcadosDoBanco() {
-    await renderMarcados();
   }
 
   // LOGIN
@@ -186,8 +182,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     authCard.style.display = "none";
     appSection.style.display = "block";
     editalJSON = await carregarEdital();
-    if (editalJSON) {
-      await renderChecklist(editalJSON);
-    }
+    if (editalJSON) await renderChecklist(editalJSON);
   }
 });
