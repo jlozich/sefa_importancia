@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="utf-8">
-  <title>Controle de Estudos</title>
+  <title>Controle de Estudos — Auditor Fiscal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,22 +11,15 @@
 <body>
 
 <header class="topbar">
-  <h1 class="title">Controle de Estudos</h1>
-  <span id="userEmail" class="small muted"></span>
+  <h1>Controle de Estudos</h1>
+  <span id="userEmail"></span>
   <button id="btnLogout" class="btn danger hide">Sair</button>
 </header>
 
 <main class="container">
-
   <section id="authCard" class="card">
-    <div class="row">
-      <div class="col">
-        <input id="email" placeholder="Email">
-      </div>
-      <div class="col">
-        <input id="password" type="password" placeholder="Senha">
-      </div>
-    </div>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Senha">
     <button id="btnLogin" class="btn primary">Entrar</button>
     <button id="btnSignup" class="btn">Criar conta</button>
     <div id="authErr" class="alert hide"></div>
@@ -36,17 +29,7 @@
     <div class="progress"><div id="overallBar" class="bar"></div></div>
     <p><strong><span id="overallPct">0</span>% concluído</strong></p>
     <div id="discContainer"></div>
-
-    <div class="group">
-      <h3>Assuntos</h3>
-      <ul class="topics">
-        <li class="topic"><span class="check">☑</span><span class="text">ICMS</span></li>
-        <li class="topic"><span class="check">☑</span><span class="text">CONFAZ</span></li>
-        <li class="topic"><span class="check">☑</span><span class="text">LC 87/96</span></li>
-      </ul>
-    </div>
   </section>
-
 </main>
 
 <script src="app.js"></script>
