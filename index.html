@@ -305,8 +305,8 @@ input[type="checkbox"] {
 // ==========================================
 // CONFIGURAÇÃO - SUBSTITUA COM SUAS CHAVES
 // ==========================================
-const SUPABASE_URL = "https://umskirpleoddlwoqoywq.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_DalV8eflzBzzuyuDFGnifA__vaxGsGs";
+const SUPABASE_URL = "https://seuprojetoaqui.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...SuaChaveAqui";
 
 // ==========================================
 // APLICAÇÃO
@@ -357,11 +357,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!usuarioAtual) return;
     
     try {
-      const { error } = await sb.from("estudo").upsert({
-        user_id: usuarioAtual.id,
-        topico,
-        estudado: estado
-      });
+      const { error } = await sb.from("estudo").upsert(
+        {
+          user_id: usuarioAtual.id,
+          topico,
+          estudado: estado,
+          updated_at: new Date().toISOString()
+        },
+        {
+          onConflict: 'user_id,topico'
+        }
+      );
       
       if (error) console.error("Erro ao salvar:", error.message);
     } catch (e) {
