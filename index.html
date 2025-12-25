@@ -1,78 +1,36 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
   <title>Controle de Estudos — Auditor Fiscal</title>
-
-  <link rel="stylesheet" href="static/styles.css">
-
-  <!-- Supabase v2 CDN (UMA VEZ) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Configuração -->
   <script src="config.js"></script>
 </head>
 <body>
-
 <header class="topbar">
-  <div class="brand">
-    <div class="logo">AF</div>
-    <div>
-      <div class="title">Controle de Estudos</div>
-      <div class="subtitle">Auditor Fiscal • Progresso por usuário</div>
-    </div>
-  </div>
-
-  <div class="userbar">
-    <span id="userEmail" class="muted small"></span>
-    <button id="btnLogout" class="btn danger hide">Sair</button>
-  </div>
+  <h1>Controle de Estudos</h1>
+  <span id="userEmail"></span>
+  <button id="btnLogout" class="hide">Sair</button>
 </header>
 
-<main class="container">
-
-  <!-- Aviso configuração -->
-  <div id="cfgWarn" class="card alert hide"></div>
-
-  <!-- LOGIN / CADASTRO -->
-  <section id="authCard" class="card">
-    <h2>Entrar</h2>
-
-    <div id="authErr" class="alert hide"></div>
-
-    <label>Email</label>
-    <input id="email" type="email" autocomplete="username">
-
-    <label>Senha</label>
-    <input id="password" type="password" autocomplete="current-password">
-
-    <div class="row" style="margin-top:10px">
-      <button id="btnLogin" class="btn primary">Entrar</button>
-      <button id="btnSignup" class="btn">Criar conta</button>
-    </div>
+<main>
+  <section id="authCard">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Senha">
+    <button id="btnLogin">Entrar</button>
+    <button id="btnSignup">Criar conta</button>
+    <div id="authErr"></div>
   </section>
 
-  <!-- APLICAÇÃO -->
   <section id="app" class="hide">
-
-    <div class="card">
-      <h2>Progresso geral</h2>
-      <div class="progress">
-        <div id="overallBar" class="bar" style="width:0%"></div>
-      </div>
-      <div class="muted">
-        <span id="overallPct">0</span>% concluído
-      </div>
-    </div>
-
+    <div class="progress"><div id="overallBar"></div></div>
+    <p><span id="overallPct">0</span>% concluído</p>
     <div id="discContainer"></div>
-
   </section>
-
 </main>
 
-<!-- APP -->
 <script src="app.js"></script>
 </body>
 </html>
