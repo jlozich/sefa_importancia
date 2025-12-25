@@ -1,133 +1,167 @@
 document.addEventListener("DOMContentLoaded", async () => {
+  // Inicializar Supabase
   const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-  // Usar const apenas 1 vez e evitar redeclaração
-  const discBox = document.getElementById("discContainer");
-  const bar = document.getElementById("overallBar");
-  const pctEl = document.getElementById("overallPct");
-  const emailEl = document.getElementById("userEmail");
-  const emailIn = document.getElementById("email");
-  const passIn = document.getElementById("password");
-  const loginBtn = document.getElementById("btnLogin");
-  const signupBtn = document.getElementById("btnSignup");
-  const logoutBtn = document.getElementById("btnLogout");
+  // Elementos da UI (declarados 1 única vez)
+  const authCard = document.getElementById("authCard");
+  const appSection = document.getElementById("app");
+  const userEmailEl = document.getElementById("userEmail");
+  const discContainer = document.getElementById("discContainer");
+  const overallBar = document.getElementById("overallBar");
+  const overallPct = document.getElementById("overallPct");
+  const emailInput = document.getElementById("email");
+  const passInput = document.getElementById("password");
+  const btnLogin = document.getElementById("btnLogin");
+  const btnSignup = document.getElementById("btnSignup");
+  const btnLogout = document.getElementById("btnLogout");
   const errEl = document.getElementById("authErr");
 
-  let user = null;
+  let currentUser = null;
 
-  async function loadJSON() {
+  // Carregar JSON do edital
+  async function carregarEdital() {
     try {
       const r = await fetch("edital_auditor.json");
-      if (!r.ok) throw new Error(r.status);
+      if (!r.ok) throw new Error("HTTP " + r.status);
       return await r.json();
-    } catch {
+    } catch (e) {
+      console.error("Erro ao carregar JSON:", e);
       return null;
     }
   }
 
-  const data = await loadJSON();
-  if (!data) {
-    if (discBox) discBox.textContent = "Falha ao carregar dados.";
+  const edital = await carregarEdital();
+  if (!edital) {
+    discContainer.textContent = "Falha ao carregar edital.";
     return;
   }
 
-  async function draw(user) {
-    if (!discBox) return;
-    discBox.innerHTML = "";
+  // Renderizar todas as matérias e tópicos do JSON
+  async function renderUI(user) {
+    discContainer.innerHTML = "";
 
     let total = 0;
-    let done = 0;
+    let feitos = 0;
 
-    for (const d of data.disciplinas) {
-      let html = `<div class="card section"><h2>${d.nome}</h2>`;
-
+    for (const d of edital.disciplinas) {
+      let bloco = `<div class="card section"><h2>${d.nome}</h>`;
+      
       if (d.subsecoes) {
         for (const s of d.subsecoes) {
-          html += `<h3>${s.nome}</h3><ul class="topics">`;
+          bloco += `<h3>${s.nome}</h3><ul class="topics">`;
           for (const t of s.topicos) {
             total++;
-            const q = await sb
-              .from("estudo")
-              .select("estudado")
-              .eq("user_id", user.id)
-              .eq("topico", t)
-              .single();
-            const ok = q.data?.estudado === true;
-            if (ok) { done++; done++; }
-
-            html += `<li class="topic ${ok ? "done" : ""}" data-topico="${t}">${t}</li>`;
+            bloco += `<li class="topic" data-topico="${t}">${t}</li>`;
           }
-          html += `</ul>`;
+          bloco += `</ul>`;
         }
       } else if (d.topicos) {
-        html += `<ul class="topics">`;
+        bloco += `<ul class="topics">`;
         for (const t of d.topicos) {
           total++;
-          const q = await sb
-            .from("estudo")
-            .select("estudado")
-            .eq("user_id", user.id)
-            .eq("topico", t)
-            .single();
-          const ok = q.data?.estudado === true;
-          if (ok) done++;
-          html += `<li class="topic ${ok ? "done" : ""}" data-topico="${t}">${t}</li>`;
+          bloco += `<li class="topic" data-topico="${t}">${t}</li>`;
         }
-        html += `</ul>`;
+        bloco += `</ul>`;
       }
 
-      html += `</div></div>`;
-      discBox.innerHTML += html;
+      bloco += `</div>`;
+      discContainer.innerHTML += bloco;
     }
 
-    const pct = total ? Math.round((done / total) * 100) : 0;
-    if (bar) bar.style.width = pct + "%";
-    if (pctEl) pctEl.textContent = pct;
+    // Calcular progresso geral
+    const pct = total ? Math.round((feitos / total) * 100) : 0;
+    overallBar.style.width = pct + "%";
+    overallPct.textContent = pct;
   }
 
-  // Login sem checagem de tabela no client (evita 400/404)
-  loginBtn.onclick = async () => {
+  // Login
+  btnLogin.onclick = async () => {
     errEl.classList.add("hide");
-    const { data: d, error } = await sb.auth.signInWithPassword({
-      email: emailIn.value.trim(),
-      password: passIn.value.trim()
-    });
-    if (error) {
-      errEl.textContent = "Login inválido ou projeto não permite auth.";
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: emailInput.value.trim(),
+        password: passInput.value.trim()
+      });
+
+      if (error) {
+        errEl.textContent = "Falha no login.";
+        errEl.classList.remove("hide");
+        return;
+      }
+
+      currentUser = data.user;
+      currentUser = data.user;
+      userEmailEl.textContent = currentUser.email;
+      authCard.classList.add("hide");
+      appSection.classList.remove("hide");
+      btnLogout.classList.remove("hide");
+
+      await renderUI(currentUser);
+    } catch (e) {
+      errEl.textContent = "Erro inesperado no login.";
       errEl.classList.remove("hide");
-      return;
+      console.error(e);
     }
-    user = d.user;
-    emailEl.textContent = user.email;
-    authCard.classList.add("hide");
-    appSection.classList.remove("hide");
-    await draw(user);
   };
 
-  // Persistência ao marcar estudo
-  document.addEventListener("click", async (e) => {
-    const li = e.target.closest(".topic");
-    if (!li || !user) return;
-    const top = li.getAttribute("data-topico") || li.textContent;
-    const state = !li.classList.contains("done");
+  // Signup
+  btnSignup.onclick = async () => {
     try {
-      await sb.from("estudo").upsert({ user_id: user.id, topico: top, estudado: state });
-      li.classList.toggle("done", state);
-      // continuar fluxo: clicar próximo item se existir
-      const next = li.nextElementSibling;
-      if (next?.classList.contains("topic")) next.click();
-    } catch {}
+      const { error } = await sb.auth.signUp({
+        email: emailInput.value.trim(),
+        password: passInput.value.trim()
+      });
+      if (error) alert(error.message);
+      else alert("Conta criada. Confirme o e-mail antes de entrar.");
+    } catch (e) {
+      alert("Falha ao criar conta.");
+      console.error(e);
+    }
+  };
+
+  // Marcar estudo ao clicar e salvar no banco
+  document.addEventListener("click", async (e) => {
+    const item = e.target.closest(".topic");
+    if (!item || !currentUser) return;
+
+    const topico = item.getAttribute("data-topico");
+    const novoEstado = !item.classList.contains("done");
+
+    try {
+      const { error } = await sb.from("estudo").upsert({
+        user_id: currentUser.id,
+        topico,
+        estudado: novoEstado
+      });
+
+      if (!error) {
+        item.classList.toggle("done", novoEstado);
+        atualizarProgresso();
+      }
+    } catch (err) {
+      console.error("Erro ao salvar estudo:", err);
+    }
   });
 
-  logoutBtn.onclick = () => location.reload();
+  function atualizarProgresso() {
+    const feitos = document.querySelectorAll(".topic.done").length;
+    const total = document.querySelectorAll(".topic").length;
+    const pct = total ? Math.round((feitos / total) * 100) : 0;
+    overallBar.style.width = pct + "%";
+    overallPct.textContent = pct;
+  }
+
+  // Logout recarrega
+  btnLogout.onclick = () => location.reload();
 
   // Auto-login se sessão ativa
-  const s = await sb.auth.getSession();
-  if (s.data.session?.user) {
-    user = s.data.session.user;
-    emailEl.textContent = user.email;
+  const sess = await sb.auth.getSession();
+  if (sess.data.session?.user) {
+    currentUser = sess.data.session.user;
+    userEmailEl.textContent = currentUser.email;
     authCard.classList.add("hide");
     appSection.classList.remove("hide");
-    await draw(user);
+    btnLogout.classList.remove("hide");
+    await renderUI(currentUser);
   }
 });
