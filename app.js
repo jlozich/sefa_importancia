@@ -1,37 +1,65 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
   const authCard = document.getElementById("authCard");
-  const appSection = document.getElementById("app");
-  const userEmailEl = document.getElementById("userEmail");
+  const app = document.getElementById("app");
+  const emailLabel = document.getElementById("userEmail");
+  const emailInput = document.getElementById("email");
+  const passInput = document.getElementById("password");
   const btnLogin = document.getElementById("btnLogin");
   const btnSignup = document.getElementById("btnSignup");
   const btnLogout = document.getElementById("btnLogout");
   const authErr = document.getElementById("authErr");
-
   const discContainer = document.getElementById("discContainer");
   const overallBar = document.getElementById("overallBar");
   const overallPct = document.getElementById("overallPct");
 
-  let currentUser = null;
+  let usuario = null;
   let edital = null;
 
   async function carregarEdital() {
     try {
       const r = await fetch("edital_auditor.json");
-      if (!r.ok) throw new Error("Erro HTTP: " + r.status);
+      if (!r.ok) throw new Error("Falha ao carregar JSON");
       return await r.json();
     } catch (e) {
-      console.error(e);
-      discContainer.textContent = "Não foi possível carregar o edital.";
+      console.error("Erro JSON:", e);
+      if (discContainer) discContainer.textContent = "Erro ao carregar dados.";
       return null;
     }
   }
 
-  edital = await carregarEdital();
-  if (!edital) return;
+  function atualizarProgresso() {
+    const marcados = document.querySelectorAll(".topic.done").length;
+    const total = document.querySelectorAll(".topic").length;
+    const pct = total ? Math.round((marcados / total) * 100) : 0;
+    if (overallBar) overallBar.style.width = pct + "%";
+    if (overallPct) overallPct.textContent = pct + "%";
+  }
 
-  function renderEdital() {
+  async function salvar(topico, estado) {
+    if (!usuario) return;
+    try {
+      await sb.from("estudo").upsert({
+        user_id: usuario.id,
+        topico,
+        estudado: estado
+      });
+    } catch (e) {
+      console.error("Erro salvar:", e);
+    }
+  }
+
+  async function marcar(el) {
+    const top = el.getAttribute("data-topico");
+    const novo = !el.classList.contains("done");
+    el.classList.toggle("done", novo);
+    await salvar(top, novo);
+    atualizarProgresso();
+  }
+
+  function renderizar() {
+    if (!discContainer || !edital) return;
     discContainer.innerHTML = "";
     for (const d of edital.disciplinas) {
       let bloco = `<div class="card section"><h2>${d.nome}</h2>`;
@@ -53,106 +81,70 @@ document.addEventListener("DOMContentLoaded", async () => {
       bloco += `</div>`;
       discContainer.innerHTML += bloco;
     }
+    document.querySelectorAll(".topic").forEach(el => {
+      el.addEventListener("click", () => marcar(el));
+    });
     atualizarProgresso();
+    carregarMarcados();
   }
 
-  async function salvarEstudo(topico, estado) {
-    if (!currentUser) return;
+  async function carregarMarcados() {
+    if (!usuario) return;
     try {
-      await supabase.from("estudo").upsert({
-        user_id: currentUser.id,
-        topico,
-        estudado: estado
-      });
-    } catch (e) {
-      console.error("Erro ao salvar estudo:", e);
-    }
-  }
-
-  async function marcarTopico(item) {
-    const topico = item.getAttribute("data-topico");
-    const novoEstado = !item.classList.contains("done");
-    item.classList.toggle("done", novoEstado);
-    await salvarEstudo(topico, novoEstado);
-    atualizarProgresso();
-  }
-
-  btnLogin.onclick = async () => {
-    authErr.classList.add("hide");
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      authErr.textContent = "Falha no login. Credenciais inválidas.";
-      authErr.classList.remove("hide");
-      return;
-    }
-
-    currentUser = data.user;
-    currentUser.id = data.user.id;
-    userEmailEl.textContent = currentUser.email;
-
-    authCard.classList.add("hide");
-    appSection.classList.remove("hide");
-
-    renderEdital();
-  };
-
-  btnSignup.onclick = async () => {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      authErr.textContent = "Erro ao criar conta.";
-      authErr.classList.remove("hide");
-    }
-  };
-
-  btnLogout.onclick = () => location.reload();
-
-  document.addEventListener("click", (e) => {
-    const topicEl = e.target.closest(".topic");
-    if (topicEl) marcarTopico(topicEl);
-  });
-
-  async function renderMarcados() {
-    if (!currentUser) return;
-    try {
-      const { data } = await supabase
-        .from("estudo")
+      const { data } = await sb.from("estudo")
         .select("topico, estudado")
-        .eq("user_id", currentUser.id);
-
+        .eq("user_id", usuario.id);
       for (const r of data || []) {
         const el = document.querySelector(`.topic[data-topico="${CSS.escape(r.topico)}"]`);
         if (el && r.estudado) el.classList.add("done");
       }
       atualizarProgresso();
     } catch (e) {
-      console.error("Erro ao carregar tópicos marcados:", e);
+      console.error("Erro carregar marcados:", e);
     }
   }
 
-  function atualizarProgresso() {
-    const feitos = document.querySelectorAll(".topic.done").length;
-    const total = document.querySelectorAll(".topic").length;
-    const pct = total ? Math.round((feitos / total) * 100) : 0;
-    overallBar.style.width = pct + "%";
-    overallPct.textContent = pct + "%";
-  }
+  btnLogin.addEventListener("click", async () => {
+    if (authErr) authErr.classList.add("hide");
+    const { data, error } = await sb.auth.signInWithPassword({
+      email: emailInput.value.trim(),
+      password: passInput.value.trim()
+    });
+    if (error) {
+      if (authErr) {
+        authErr.textContent = "Login falhou.";
+        authErr.classList.remove("hide");
+      }
+      return;
+    }
+    usuario = data.user;
+    emailLabel.textContent = usuario.email;
+    authCard.style.display = "none";
+    app.style.display = "block";
+    edital = await carregarEdital();
+    if (edital) renderizar();
+  });
 
-  async function renderEdital() {
-    renderEdital();
-    await renderMarcados();
-  }
+  btnSignup.addEventListener("click", async () => {
+    const { error } = await sb.auth.signUp({
+      email: emailInput.value.trim(),
+      password: passInput.value.trim()
+    });
+    if (error && authErr) {
+      authErr.textContent = "Erro ao criar conta.";
+      authErr.classList.remove("hide");
+    }
+  });
 
-  const sess = await supabase.auth.getSession();
-  if (sess.data.session?.user) {
-    currentUser = sess.data.session.user;
-    userEmailEl.textContent = currentUser.email;
-    authCard.classList.add("hide");
-    appSection.classList.remove("hide");
-    renderEdital();
+  btnLogout.addEventListener("click", () => location.reload());
+
+  const s = await sb.auth.getSession();
+  if (s.data.session?.user) {
+    usuario = s.data.session.user;
+    emailLabel.textContent = usuario.email;
+    authCard.style.display = "none";
+    app.style.display = "block";
+    edital = await carregarEdital();
+    if (edital) renderizar();
   }
 });
