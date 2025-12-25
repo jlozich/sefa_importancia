@@ -1,51 +1,62 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const { SUPABASE_URL, SUPABASE_ANON_KEY } = window;
+  const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-  const authErr = document.getElementById("authErr");
   const authCard = document.getElementById("authCard");
   const appSection = document.getElementById("app");
   const userEmail = document.getElementById("userEmail");
   const discContainer = document.getElementById("discContainer");
   const overallBar = document.getElementById("overallBar");
   const overallPct = document.getElementById("overallPct");
-
-  const emailEl = document.getElementById("email");
-  const passEl = document.getElementById("password");
-  const btnLogin = document.getElementById("btnLogin");
-  const btnSignup = document.getElementById("btnSignup");
   const btnLogout = document.getElementById("btnLogout");
 
   let currentUser = null;
 
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  async function carregarUI(user) {
+    discContainer.innerHTML = "Carregando…";
 
-  async function loadConteudo(user) {
-    try {
-      const { data, error } = await sb
-        .from("disciplinas")
+    const { data: disciplinas } = await sb.from("disciplinas").select("*").eq("user_id", user.id);
+    if (!disciplinas || disciplinas.length === 0) {
+      discContainer.innerHTML = "Nenhuma disciplina cadastrada.";
+      return;
+    }
+
+    let html = "";
+
+    for (const d of disciplinas) {
+      const { data: topicos } = await sb
+        .from("topicos")
         .select("*")
+        .eq("disciplina_id", d.id)
         .eq("user_id", user.id);
 
-      console.log("Supabase disciplinas → data:", data, "error:", error);
-
-      if (error) {
-        discContainer.textContent = "Erro ao carregar dados.";
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        discContainer.textContent = "Nenhum assunto cadastrado.";
-        return;
-      }
-
-      discContainer.innerHTML = data.map(d =>
-        `<div class="card section"><strong>${d.nome}</strong></div>`
-      ).join("");
-
-    } catch (e) {
-      console.log("Falha inesperada:", e);
-      discContainer.textContent = "Falha ao carregar conteúdos.";
+      html += `
+      <div class="card section">
+        <div class="disc-head"><strong>${d.nome}</strong></div>
+        <ul class="topics">
+          ${
+            topicos && topicos.length
+              ? topicos.map(t => `
+                <li class="topic ${t.estudado ? "done" : ""}" data-id="${t.id}">
+                  <span class="check">☑</span>
+                  <span class="text">${t.nome}</span>
+                </li>
+              `).join("")
+              : "<li>Nenhum tópico cadastrado</li>"
+          }
+        </ul>
+      </div>`;
     }
+
+    discContainer.innerHTML = html;
+    atualizarProgresso();
+  }
+
+  function atualizarProgresso() {
+    const feitos = document.querySelectorAll(".topic.done").length;
+    const total = document.querySelectorAll(".topic").length;
+    const pct = total ? Math.round((feitos / total) * 100) : 0;
+    overallBar.style.width = pct + "%";
+    overallPct.textContent = pct;
   }
 
   async function setUser(user) {
@@ -55,68 +66,36 @@ document.addEventListener("DOMContentLoaded", async () => {
       authCard.classList.add("hide");
       appSection.classList.remove("hide");
       btnLogout.classList.remove("hide");
-
-      await loadConteudo(user);
-    } else {
-      authCard.classList.remove("hide");
-      appSection.classList.add("hide");
-      btnLogout.classList.add("hide");
-      discContainer.innerHTML = "";
-      userEmail.textContent = "";
+      await carregarUI(user);
     }
   }
 
-  function updateProgresso() {
-    const done = document.querySelectorAll(".topic.done").length;
-    const total = document.querySelectorAll(".topic").length;
-    const pct = total ? Math.round((done / total) * 100) : 0;
-    overallBar.style.width = pct + "%";
-    overallPct.textContent = pct;
-  }
+  document.addEventListener("click", async (e) => {
+    const item = e.target.closest(".topic");
+    if (!item || !currentUser) return;
 
-  btnLogin.onclick = async () => {
-    const { data, error } = await sb.auth.signInWithPassword({
-      email: emailEl.value.trim(),
-      password: passEl.value.trim()
-    });
+    const id = item.getAttribute("data-id");
+    const novoEstado = !item.classList.contains("done");
 
-    console.log("Auth Login → data:", data, "error:", error);
+    const { error } = await sb
+      .from("topicos")
+      .update({ estudado: novoEstado })
+      .eq("id", id)
+      .eq("user_id", currentUser.id);
 
-    if (error) {
-      authErr.textContent = "Falha no login.";
-      authErr.classList.remove("hide");
-    } else {
-      authErr.classList.add("hide");
-      await setUser(data.user);
+    if (!error) {
+      item.classList.toggle("done", novoEstado);
+      atualizarProgresso();
     }
-  };
-
-  btnSignup.onclick = async () => {
-    const { error } = await sb.auth.signUp({
-      email: emailEl.value.trim(),
-      password: passEl.value.trim()
-    });
-    if (error) {
-      authErr.textContent = "Erro ao criar conta.";
-      authErr.classList.remove("hide");
-    }
-  };
+  });
 
   btnLogout.onclick = async () => {
     await sb.auth.signOut();
-    await setUser(null);
+    location.reload();
   };
 
   const sess = await sb.auth.getSession();
-  await setUser(sess.data.session?.user);
-
-  sb.auth.onAuthStateChange((_e, s) => setUser(s?.user));
-
-  document.addEventListener("click", e => {
-    const t = e.target.closest(".topic");
-    if (t) {
-      t.classList.toggle("done");
-      updateProgresso();
-    }
-  });
+  if (sess.data.session?.user) {
+    await setUser(sess.data.session.user);
+  }
 });
