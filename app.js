@@ -1,13 +1,16 @@
 // app.js
 // Site estático + Supabase (Auth + Postgres) para salvar progresso por usuário.
 
+// -------------------- ELEMENTOS --------------------
 const cfgWarn = document.getElementById("cfgWarn");
 const authCard = document.getElementById("authCard");
 const appSection = document.getElementById("app");
 const authErr = document.getElementById("authErr");
+
 const btnLogin = document.getElementById("btnLogin");
 const btnSignup = document.getElementById("btnSignup");
 const btnLogout = document.getElementById("btnLogout");
+
 const userEmail = document.getElementById("userEmail");
 const emailEl = document.getElementById("email");
 const passEl = document.getElementById("password");
@@ -16,10 +19,12 @@ const overallBar = document.getElementById("overallBar");
 const overallPct = document.getElementById("overallPct");
 const discContainer = document.getElementById("discContainer");
 
+// -------------------- HELPERS UI --------------------
 function show(el){ el.classList.remove("hide"); }
 function hide(el){ el.classList.add("hide"); }
+
 function setErr(msg){
-  authErr.textContent = msg;
+  authErr.textContent = msg || "";
   msg ? show(authErr) : hide(authErr);
 }
 
@@ -33,36 +38,47 @@ function slug(s){
 }
 
 function percent(done, total){
-  if(!total) return 0;
-  return (done/total)*100;
+  return total ? (done / total) * 100 : 0;
 }
 
+// -------------------- CONFIG SUPABASE --------------------
 function ensureConfig(){
   const url = window.SUPABASE_URL;
   const key = window.SUPABASE_ANON_KEY;
+
   if(!url || !key || url.includes("COLE_AQUI") || key.includes("COLE_AQUI")){
     cfgWarn.innerHTML = `
-      <strong>Configuração pendente:</strong> edite <code>config.js</code> e cole
-      <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> do seu projeto Supabase.
+      <strong>Configuração pendente:</strong><br>
+      Edite <code>config.js</code> e informe:
+      <ul>
+        <li><code>SUPABASE_URL</code></li>
+        <li><code>SUPABASE_ANON_KEY</code></li>
+      </ul>
     `;
     show(cfgWarn);
     return null;
   }
+
   hide(cfgWarn);
   return { url, key };
 }
 
 const cfg = ensureConfig();
-const supabase = cfg ? window.supabase.createClient(cfg.url, cfg.key) : null;
 
-// Ordem de importância (conforme ranking fiscal)
+// 👉 instância do cliente (NÃO usar nome "supabase")
+const sb = cfg ? window.supabase.createClient(cfg.url, cfg.key) : null;
+
+// -------------------- ORDEM DE IMPORTÂNCIA --------------------
 const ORDERED_IDS = ["D7","D8","D4","D9","D10","D5","D2","D1","D3","D6","D11"];
 
+// -------------------- LOAD EDITAL --------------------
 async function loadEdital(){
   const res = await fetch("edital_auditor.json", { cache: "no-store" });
-  if(!res.ok) throw new Error("Não consegui carregar edital_auditor.json");
+  if(!res.ok) throw new Error("Falha ao carregar edital_auditor.json");
+
   const data = await res.json();
   const byId = new Map(data.disciplinas.map(d => [d.id, d]));
+
   const ordered = [];
   for(const id of ORDERED_IDS){
     if(byId.has(id)) ordered.push(byId.get(id));
@@ -70,23 +86,31 @@ async function loadEdital(){
   for(const d of data.disciplinas){
     if(!ORDERED_IDS.includes(d.id)) ordered.push(d);
   }
+
   return ordered.map(d => ({
     id: d.id,
     nome: d.nome,
     questoes: d.questoes,
     grupos: (d.subsecoes && d.subsecoes.length)
-      ? d.subsecoes.map(s => ({ nome: s.nome || "Tópicos", topicos: s.topicos || [] }))
+      ? d.subsecoes.map(s => ({
+          nome: s.nome || "Tópicos",
+          topicos: s.topicos || []
+        }))
       : [{ nome: "Tópicos", topicos: d.topicos || [] }]
   }));
 }
 
+// -------------------- PROGRESSO --------------------
 async function fetchProgressMap(userId){
   const map = new Map();
-  const { data, error } = await supabase
+
+  const { data, error } = await sb
     .from("progress")
     .select("item_id, done")
     .eq("user_id", userId);
+
   if(error) throw error;
+
   for(const row of (data || [])){
     map.set(row.item_id, !!row.done);
   }
@@ -94,12 +118,19 @@ async function fetchProgressMap(userId){
 }
 
 async function upsertProgress(userId, itemId, done){
-  const { error } = await supabase
+  const { error } = await sb
     .from("progress")
-    .upsert({ user_id: userId, item_id: itemId, done: !!done, updated_at: new Date().toISOString() });
+    .upsert({
+      user_id: userId,
+      item_id: itemId,
+      done: !!done,
+      updated_at: new Date().toISOString()
+    });
+
   if(error) throw error;
 }
 
+// -------------------- RENDER UI --------------------
 function renderUI(edital, progMap){
   discContainer.innerHTML = "";
 
@@ -111,32 +142,23 @@ function renderUI(edital, progMap){
     const section = document.createElement("section");
     section.className = "section card";
 
-    const head = document.createElement("div");
-    head.className = "disc-head";
-
-    const left = document.createElement("div");
-    left.innerHTML = `
-      <h2 style="margin:0 0 6px 0;">${d.nome}</h2>
-      ${d.questoes ? `<div class="muted">Peso no edital: ${d.questoes} questões</div>` : ""}
+    section.innerHTML = `
+      <div class="disc-head">
+        <div>
+          <h2>${d.nome}</h2>
+          ${d.questoes ? `<div class="muted">Peso: ${d.questoes} questões</div>` : ""}
+        </div>
+        <div class="disc-progress">
+          <div class="muted small" id="stat-${d.id}">0/0 • 0%</div>
+          <div class="progress thin"><div class="bar" id="bar-${d.id}"></div></div>
+        </div>
+      </div>
     `;
-
-    const right = document.createElement("div");
-    right.className = "disc-progress";
-    right.innerHTML = `
-      <div class="muted small" id="stat-${d.id}">0/0 • 0.0%</div>
-      <div class="progress thin"><div class="bar" id="bar-${d.id}" style="width:0%"></div></div>
-    `;
-
-    head.appendChild(left);
-    head.appendChild(right);
-    section.appendChild(head);
 
     for(const g of d.grupos){
       const group = document.createElement("div");
       group.className = "group";
-      const h3 = document.createElement("h3");
-      h3.textContent = g.nome;
-      group.appendChild(h3);
+      group.innerHTML = `<h3>${g.nome}</h3>`;
 
       const ul = document.createElement("ul");
       ul.className = "topics";
@@ -149,36 +171,25 @@ function renderUI(edital, progMap){
         if(isDone){ discDone++; done++; }
 
         const li = document.createElement("li");
-        li.className = "topic" + (isDone ? " done" : "");
-        li.dataset.itemId = itemId;
-        li.dataset.done = isDone ? "1" : "0";
-
+        li.className = `topic ${isDone ? "done" : ""}`;
         li.innerHTML = `
           <span class="check">${isDone ? "✔" : "○"}</span>
           <span class="text">${t}</span>
         `;
 
         li.addEventListener("click", async () => {
-          const cur = li.dataset.done === "1";
-          const next = !cur;
+          const next = !li.classList.contains("done");
 
-          // UI otimista
-          li.dataset.done = next ? "1" : "0";
           li.classList.toggle("done", next);
           li.querySelector(".check").textContent = next ? "✔" : "○";
 
           try{
-            const user = (await supabase.auth.getUser()).data.user;
-            await upsertProgress(user.id, itemId, next);
-            // Recalcular barras sem recarregar
+            const { data } = await sb.auth.getUser();
+            await upsertProgress(data.user.id, itemId, next);
             progMap.set(itemId, next);
             renderUI(edital, progMap);
-          }catch(e){
-            // rollback
-            li.dataset.done = cur ? "1" : "0";
-            li.classList.toggle("done", cur);
-            li.querySelector(".check").textContent = cur ? "✔" : "○";
-            alert("Não consegui salvar seu progresso. Verifique configuração do Supabase.");
+          }catch{
+            alert("Erro ao salvar progresso.");
           }
         });
 
@@ -189,23 +200,23 @@ function renderUI(edital, progMap){
       section.appendChild(group);
     }
 
-    // atualizar stats disciplina
     const pct = percent(discDone, discTotal);
-    section.querySelector(`#stat-${d.id}`).textContent = `${discDone}/${discTotal} • ${pct.toFixed(1)}%`;
+    section.querySelector(`#stat-${d.id}`).textContent =
+      `${discDone}/${discTotal} • ${pct.toFixed(1)}%`;
     section.querySelector(`#bar-${d.id}`).style.width = `${pct}%`;
 
     discContainer.appendChild(section);
   }
 
-  // geral
-  const op = percent(done, total);
-  overallBar.style.width = `${op}%`;
-  overallPct.textContent = op.toFixed(1);
+  const overall = percent(done, total);
+  overallBar.style.width = `${overall}%`;
+  overallPct.textContent = overall.toFixed(1);
 }
 
+// -------------------- AUTH FLOW --------------------
 async function setLoggedInUI(user){
-  userEmail.textContent = user?.email || "";
   if(user){
+    userEmail.textContent = user.email;
     hide(authCard);
     show(appSection);
     show(btnLogout);
@@ -221,39 +232,37 @@ async function setLoggedInUI(user){
 }
 
 async function init(){
-  if(!supabase) return;
+  if(!sb) return;
 
-  // sessão atual
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   await setLoggedInUI(session?.user || null);
 
-  // listener de mudança de auth
-  supabase.auth.onAuthStateChange(async (_event, session2) => {
+  sb.auth.onAuthStateChange(async (_evt, session2) => {
     await setLoggedInUI(session2?.user || null);
   });
 
-  btnLogin.addEventListener("click", async () => {
+  btnLogin.onclick = async () => {
     setErr("");
-    const email = emailEl.value.trim();
-    const password = passEl.value;
-    if(!email || !password) return setErr("Preencha email e senha.");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if(error) return setErr(error.message);
-  });
+    const { error } = await sb.auth.signInWithPassword({
+      email: emailEl.value.trim(),
+      password: passEl.value
+    });
+    if(error) setErr(error.message);
+  };
 
-  btnSignup.addEventListener("click", async () => {
+  btnSignup.onclick = async () => {
     setErr("");
-    const email = emailEl.value.trim();
-    const password = passEl.value;
-    if(!email || !password) return setErr("Preencha email e senha.");
-    const { error } = await supabase.auth.signUp({ email, password });
-    if(error) return setErr(error.message);
-    setErr("Cadastro enviado. Se o Supabase exigir confirmação, verifique seu email.");
-  });
+    const { error } = await sb.auth.signUp({
+      email: emailEl.value.trim(),
+      password: passEl.value
+    });
+    if(error) setErr(error.message);
+    else setErr("Cadastro criado. Verifique seu email se houver confirmação.");
+  };
 
-  btnLogout.addEventListener("click", async () => {
-    await supabase.auth.signOut();
-  });
+  btnLogout.onclick = async () => {
+    await sb.auth.signOut();
+  };
 }
 
 init();
