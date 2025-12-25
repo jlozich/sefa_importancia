@@ -1,4 +1,3 @@
-// ================= SUPABASE INIT =================
 document.addEventListener("DOMContentLoaded", async () => {
   const { SUPABASE_URL, SUPABASE_ANON_KEY } = window;
 
@@ -18,21 +17,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let currentUser = null;
 
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    authErr.textContent = "Erro: chaves do Supabase não carregadas.";
-    authErr.classList.remove("hide");
-    return;
-  }
-
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ================= FUNÇÕES =================
   async function loadConteudo(user) {
     try {
       const { data, error } = await sb
         .from("disciplinas")
-        .select("nome, user_id")
+        .select("*")
         .eq("user_id", user.id);
+
+      console.log("Supabase disciplinas → data:", data, "error:", error);
 
       if (error) {
         discContainer.textContent = "Erro ao carregar dados.";
@@ -40,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       if (!data || data.length === 0) {
-        discContainer.textContent = "Nenhum assunto encontrado.";
+        discContainer.textContent = "Nenhum assunto cadastrado.";
         return;
       }
 
@@ -48,7 +42,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         `<div class="card section"><strong>${d.nome}</strong></div>`
       ).join("");
 
-    } catch {
+    } catch (e) {
+      console.log("Falha inesperada:", e);
       discContainer.textContent = "Falha ao carregar conteúdos.";
     }
   }
@@ -60,6 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       authCard.classList.add("hide");
       appSection.classList.remove("hide");
       btnLogout.classList.remove("hide");
+
       await loadConteudo(user);
     } else {
       authCard.classList.remove("hide");
@@ -78,15 +74,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     overallPct.textContent = pct;
   }
 
-  // ================= EVENTOS =================
   btnLogin.onclick = async () => {
     const { data, error } = await sb.auth.signInWithPassword({
       email: emailEl.value.trim(),
       password: passEl.value.trim()
     });
 
+    console.log("Auth Login → data:", data, "error:", error);
+
     if (error) {
-      authErr.textContent = "Credenciais inválidas ou usuário não confirmado.";
+      authErr.textContent = "Falha no login.";
       authErr.classList.remove("hide");
     } else {
       authErr.classList.add("hide");
@@ -101,9 +98,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     if (error) {
       authErr.textContent = "Erro ao criar conta.";
-      authErr.classList.remove("hide");
-    } else {
-      authErr.textContent = "Conta criada! Confirme o e-mail antes de entrar.";
       authErr.classList.remove("hide");
     }
   };
