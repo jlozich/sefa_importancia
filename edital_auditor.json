@@ -1,0 +1,577 @@
+{
+  "cargo": "Auditor Fiscal de Receitas Estaduais",
+  "fonte": {
+    "documento": "Edital SEFA/SEPLAD (Anexo II – Conteúdo Programático)",
+    "observacao": "Conteúdo programático do cargo Auditor Fiscal de Receitas Estaduais (Área Fim)."
+  },
+  "disciplinas": [
+    {
+      "id": "D1",
+      "nome": "Português",
+      "questoes": 15,
+      "topicos": [
+        "Ortografia oficial",
+        "Acentuação gráfica",
+        "Flexão nominal e verbal",
+        "Pronomes: emprego, formas de tratamento e colocação",
+        "Emprego de tempos e modos verbais",
+        "Vozes do verbo",
+        "Concordância nominal e verbal",
+        "Regência nominal e verbal",
+        "Ocorrência de crase",
+        "Pontuação",
+        "Redação (confronto e reconhecimento de frases corretas e incorretas)",
+        "Intelecção de texto"
+      ]
+    },
+    {
+      "id": "D2",
+      "nome": "Matemática Financeira e Estatística",
+      "questoes": 15,
+      "subsecoes": [
+        {
+          "nome": "Matemática Financeira",
+          "topicos": [
+            "Juros simples",
+            "Montante e juros",
+            "Taxa real e taxa efetiva",
+            "Taxas equivalentes",
+            "Capitais equivalentes",
+            "Juros compostos",
+            "Montante e juros (juros compostos)",
+            "Taxas equivalentes (juros compostos)",
+            "Capitais equivalentes (juros compostos)",
+            "Capitalização contínua",
+            "Descontos: simples e composto",
+            "Desconto racional e desconto comercial",
+            "Amortizações",
+            "Sistema francês",
+            "Sistema de amortização constante",
+            "Sistema misto",
+            "Fluxo de caixa",
+            "Valor atual",
+            "Taxa interna de retorno"
+          ]
+        },
+        {
+          "nome": "Estatística Descritiva",
+          "topicos": [
+            "Gráficos, tabelas, medidas de posição e de variabilidade",
+            "Probabilidades: conceito, axiomas e distribuições (binominal, normal, poisson, qui-quadrado)",
+            "Inferência estatística",
+            "Amostragem: amostras casuais e não casuais",
+            "Processos de amostragem, incluindo estimativas de parâmetros",
+            "Intervalos de confiança",
+            "Testes de hipóteses para médias e proporções",
+            "Correlação e Regressão"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D3",
+      "nome": "Administração Pública e Ética",
+      "questoes": 10,
+      "subsecoes": [
+        {
+          "nome": "Administração Pública",
+          "topicos": [
+            "Evolução da administração pública no Brasil (após 1930)",
+            "Reformas Administrativas",
+            "Análise crítica aos modelos de gestão pública: patrimonialista, burocrático e gerencial",
+            "Conceitos de Eficiência, Eficácia e Efetividade aplicados à Administração Pública: avaliação e mensuração do desempenho governamental",
+            "Parceria entre governo e sociedade, ouvidorias, governança interna e externa",
+            "Controle e Desempenho",
+            "Transparência",
+            "Desconcentração e descentralização administrativa",
+            "Governabilidade, Governança e Accountability",
+            "Gestão Pública Empreendedora",
+            "Modernização da gestão contemporânea e modelo de gestão pública por resultados",
+            "Políticas públicas e monitoramento de resultados",
+            "Mensuração de desempenho: controles e indicadores de produtividade",
+            "Tendências de modernização e novos modelos de gestão da administração pública"
+          ]
+        },
+        {
+          "nome": "Ética",
+          "topicos": [
+            "Código de Ética Profissional SEFA (Decreto nº 4.104, de 14 de junho de 2000)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D4",
+      "nome": "Direito Administrativo, Civil e Penal",
+      "questoes": 25,
+      "subsecoes": [
+        {
+          "nome": "Direito Administrativo",
+          "topicos": [
+            "Administração Pública",
+            "Conceito. Estrutura legal dos Órgãos Públicos",
+            "Natureza e fins da administração",
+            "Agentes da Administração",
+            "Princípios básicos da Administração: legalidade, moralidade, impessoalidade, finalidade, publicidade, eficiência",
+            "Poderes e deveres do administrador público",
+            "Poderes Administrativos: poder vinculado e poder discricionário, poder hierárquico, poder disciplinar, poder regulamentar, poder de polícia",
+            "Atos Administrativos",
+            "Conceitos e requisitos",
+            "Classificação",
+            "Espécies",
+            "Validade",
+            "Formalidade",
+            "Motivação",
+            "Revogação",
+            "Anulação",
+            "Modificação",
+            "Extinção",
+            "Controle de Legalidade",
+            "Contratos Administrativos",
+            "Alteração unilateral e bilateral",
+            "Equilíbrio financeiro",
+            "Cláusulas exorbitantes",
+            "Modalidades de contratos",
+            "Extinção, prorrogação e renovação. Inexecução",
+            "Revisão, rescisão e suspensão",
+            "Licitação (Lei nº 14.133/2021) - Finalidade, princípios e objeto da licitação",
+            "Serviços Públicos: conceito, classificação, regulamentação e controle, requisitos do serviço e direitos do usuário, competência para prestar o serviço, formas e meios de prestação do serviço",
+            "Organização Administrativa: Administração direta e indireta",
+            "Agências executivas e reguladoras",
+            "Servidores públicos: classificação e Regime Jurídico",
+            "Normas constitucionais sobre o regime jurídico dos servidores estatais",
+            "Regime Jurídico Único dos Servidores Públicos Civis da Administração Direta, das Autarquias e das Fundações Públicas do Estado do Pará (Lei 5.810/1994 e alterações)",
+            "Lei Orgânica da Administração Tributária do Estado do Pará (LC 78/2011)",
+            "Comparação entre o controle administrativo e judiciário",
+            "Princípios do Processo Administrativo",
+            "A responsabilidade civil do Estado",
+            "Lei de Acesso à Informação (Lei Federal nº 12.527/2011)"
+          ]
+        },
+        {
+          "nome": "Direito Civil",
+          "topicos": [
+            "A Lei: vigência no tempo e no espaço",
+            "Das pessoas",
+            "Pessoas naturais e jurídicas",
+            "Domicílio civil",
+            "Das diferentes classes de bens",
+            "Fatos e atos jurídicos",
+            "Validade e defeitos dos negócios jurídicos",
+            "Atos ilícitos",
+            "Direito das Coisas",
+            "Posse",
+            "Efeitos da posse",
+            "Propriedade. Direitos reais sobre coisas alheias",
+            "Teoria Geral das obrigações",
+            "Direito das obrigações",
+            "Modalidades das obrigações",
+            "As formas de extinção das obrigações",
+            "A inexecução das obrigações",
+            "Transmissão das Obrigações",
+            "Fontes das obrigações",
+            "Contratos, atos unilaterais e responsabilidade civil",
+            "Responsabilidade contratual e extracontratual",
+            "Teoria Geral dos contratos",
+            "Espécies de contratos",
+            "Contratos do Código Civil",
+            "Direito das Sucessões",
+            "Sucessão em geral",
+            "Sucessão legítima",
+            "Sucessão testamentária",
+            "Regimes de bens entre cônjuges",
+            "Inventário e partilha",
+            "Preferências e privilégios creditórios",
+            "Do direito de empresa",
+            "Empresário e sociedade",
+            "Sociedades anônimas (Lei nº 6.404/1976 e alterações)",
+            "Estabelecimento",
+            "Do registro, nome empresarial, gerente, contadores, outros auxiliares e escrituração",
+            "Desconsideração da personalidade jurídica",
+            "Teoria geral da falência",
+            "Caracterização do estado falimentar, efeitos da falência quanto aos bens do falido e aos direitos dos credores do falido, conceito de recuperação judicial e extrajudicial",
+            "Crimes falimentares. Lei nº 11.101/2005"
+          ]
+        },
+        {
+          "nome": "Direito Penal",
+          "topicos": [
+            "Aplicação da lei penal",
+            "Crime. Imputabilidade",
+            "Crimes contra a honra, o patrimônio, a fé pública e a administração pública",
+            "Abuso de autoridade – Lei nº 13.869/2019 e alterações",
+            "Enriquecimento ilícito – Lei nº 8.429/1992 e alterações",
+            "Crimes contra a ordem tributária - Lei nº 8.137/1990 e alterações",
+            "Crimes contra o sistema financeiro – Lei nº 7.492/1986 e alterações"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D5",
+      "nome": "Direito Constitucional",
+      "questoes": 15,
+      "topicos": [
+        "Conceitos de teoria do Estado",
+        "Princípios do Estado Democrático de Direito",
+        "Conceito de constituição",
+        "Regras materialmente constitucionais e formalmente constitucionais",
+        "Tipos de constituição",
+        "O Direito Constitucional e os demais ramos do direito",
+        "Poder constituinte originário e derivado",
+        "Controle de constitucionalidade",
+        "Controle judiciário difuso e concentrado",
+        "Ação declaratória de constitucionalidade",
+        "Ação direta de inconstitucionalidade",
+        "Constituição da República Federativa do Brasil: Princípios fundamentais e Direitos e Deveres individuais e coletivos",
+        "Habeas corpus",
+        "Mandado de segurança",
+        "Direito de petição",
+        "Mandado de injunção",
+        "Ação popular",
+        "Ação civil pública",
+        "Habeas data",
+        "Direitos sociais",
+        "Nacionalidade",
+        "Direitos políticos",
+        "Organização político-administrativa",
+        "Federalismo no Brasil",
+        "Repartição de receitas tributárias",
+        "Competências constitucionais: União, Estados, Distrito Federal e Municípios",
+        "Intervenção nos Estados e Municípios",
+        "Administração pública, disposições gerais e servidores públicos civis",
+        "Separação de poderes",
+        "Sistemas de governo",
+        "Poder Legislativo, Poder Executivo e Poder Judiciário",
+        "Ministério Público",
+        "Processo legislativo",
+        "Defesa do Estado e as instituições democráticas",
+        "Princípios gerais da atividade econômica e financeira",
+        "Sistema Tributário Nacional",
+        "Orçamento e Finanças Públicas",
+        "Constituição do Estado do Pará",
+        "Fundamentos do Estado",
+        "Poder Legislativo, Poder Executivo e Poder Judiciário (PA)",
+        "Funções essenciais à justiça",
+        "Administração Pública (PA)",
+        "Servidores Públicos Civis (PA)",
+        "Tratados Internacionais de proteção dos direitos humanos: conceito, formação, extinção e efeitos jurídicos",
+        "Sistemas e instrumentos de proteção dos direitos humanos",
+        "Hierarquia, incorporação e impacto dos tratados internacionais de proteção dos direitos humanos no direito brasileiro"
+      ]
+    },
+    {
+      "id": "D6",
+      "nome": "Fluência em Dados",
+      "questoes": 20,
+      "subsecoes": [
+        {
+          "nome": "Gestão de Projetos",
+          "topicos": [
+            "Metodologias Ágeis: Scrum, Modelagem Ágil, Scrumban, Kanban, Extreme Programming (XP), Lean e Guia de Prática Ágil do PMI"
+          ]
+        },
+        {
+          "nome": "Pipeline de Dados",
+          "topicos": [
+            "Pipeline de Dados",
+            "Fundamentos, orquestração, integração, ETL"
+          ]
+        },
+        {
+          "nome": "Business Intelligence (BI)",
+          "topicos": [
+            "Business Intelligence",
+            "Processo de coleta, organização, análise e compartilhamento de informações",
+            "Ferramentas de criação de dashboards: Power BI",
+            "Elaboração de relatórios analíticos",
+            "Processo de descoberta de informações (coleta, transformação, análise, visualização, decisão)",
+            "Indicadores e métricas (KPI – Key Performance Indicators, métricas financeiras e fiscais)"
+          ]
+        },
+        {
+          "nome": "Linguagens de Programação para Ciência de Dados",
+          "topicos": [
+            "Linguagem Python"
+          ]
+        },
+        {
+          "nome": "Análise de Dados Estruturados Utilizando SQL",
+          "topicos": [
+            "Estruturas de dados, chaves primárias e estrangeiras (PK, FK), tipos de dados, relacionamento entre tabelas, joins, condicionais, agrupamento, sumarização, filtragem, manipulação de valores, textos e datas, subconsultas, identificação e tratamento de valores faltantes ou duplicados, produto cartesiano, comandos básicos de SQL (SELECT, FROM, WHERE, ORDER BY, GROUP BY, INSERT, UPDATE, DELETE, COUNT, SUM, AVG, MIN, MAX)"
+          ]
+        },
+        {
+          "nome": "Análise de Dados com Microsoft Excel",
+          "topicos": [
+            "Análise e manipulação de dados com as funções SE, E, OU, SOMASES, CONT.SES, PROCV, PROCX, ÚNICO, SEERRO, funções de tratamento de texto e data, e outras funções básicas e avançadas e suas combinações",
+            "Identificação e tratamento de valores faltantes ou duplicados",
+            "BIG DATA: Arquitetura de Big Data"
+          ]
+        },
+        {
+          "nome": "Inteligência Artificial",
+          "topicos": [
+            "Inteligência artificial e aprendizado de máquina (IA/ML): Modelos preditivos (supervisionados) e descritivos (não supervisionados)",
+            "Avaliação de modelos: overfitting, métricas (precisão, recall, F1-score, ROC)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D7",
+      "nome": "Direito Tributário",
+      "questoes": 30,
+      "subsecoes": [
+        {
+          "nome": "Direito Tributário I",
+          "topicos": [
+            "Sistema Tributário Nacional",
+            "Princípios gerais",
+            "Limitações ao poder de tributar",
+            "Impostos da União",
+            "Impostos dos Estados e do Distrito Federal",
+            "Impostos dos Municípios",
+            "Repartição de receitas tributárias",
+            "Código Tributário Nacional (Lei nº 5.172/1966 e suas alterações)",
+            "Tributo: definição e espécies - impostos, taxas, contribuição de melhoria, empréstimos compulsórios, contribuições especiais",
+            "Obrigação tributária: principal e acessória",
+            "Fato gerador",
+            "Incidência e não incidência",
+            "Isenção",
+            "Imunidade",
+            "Domicílio tributário",
+            "Competência tributária",
+            "Sujeito ativo",
+            "Capacidade tributária",
+            "Sujeito passivo: contribuinte e responsável",
+            "Responsabilidade solidária, responsabilidade de terceiros, responsabilidade por infrações",
+            "Base de cálculo",
+            "Alíquota",
+            "Crédito tributário: lançamento - efeitos e modalidades",
+            "Suspensão, extinção e exclusão do crédito tributário",
+            "Garantias e Privilégios do Crédito Tributário",
+            "Administração tributária: fiscalização, regulamentação, competência, limites e procedimentos",
+            "Dívida ativa: Protesto de Certidões de Dívida Ativa e Certidões Negativas",
+            "Legislação Tributária: Disposições Gerais, leis, tratados, Convenções Internacionais e Decretos",
+            "Métodos de interpretação",
+            "Vigência, aplicação, interpretação e integração da legislação tributária",
+            "Lei Complementar nº 123/2006",
+            "Súmulas Vinculantes do Supremo Tribunal Federal em matéria tributária"
+          ]
+        },
+        {
+          "nome": "Direito Tributário II",
+          "topicos": [
+            "EC 132/2023",
+            "Lei Complementar nº 214/2025: Livro I – do IBS e da CBS (Títulos I, III, IV [Cap. I, V, VI, VII], VII, VIII [Cap. I, II, V, VI]) e Livro III – demais disposições (Título III – disposições transitórias: Capítulos I, II e III)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D8",
+      "nome": "Legislação Tributária do Estado do Pará",
+      "questoes": 25,
+      "subsecoes": [
+        {
+          "nome": "ICMS",
+          "topicos": [
+            "Leis Complementares Federais nº 24/1975; nº 87/1996; nº 116/2003; nº 160/2017 e respectivas alterações",
+            "Lei Complementar Estadual nº 58/2006",
+            "Lei Estadual nº 5.530/1989 e alterações",
+            "Regulamento do ICMS (Decreto nº 4.676/2001 e alterações): Livro Primeiro (Normas Gerais de Tributação) – Título I (Obrigação tributária principal) – Capítulos I a XIII; Título II (obrigações acessórias) – Capítulos I, II, VI-A (EFD), IX; Livro Segundo (Sistemas Especiais) – Título I – Capítulos I e II; Título VIII (Diferimento) – Capítulos I a III; Livro Quinto (Administração Tributária) – Título I – Capítulos I a III; Título II (Fiscalização) – Capítulos I a VI"
+          ]
+        },
+        {
+          "nome": "Processo Administrativo Tributário",
+          "topicos": [
+            "Lei nº 6.182/1998 e alterações",
+            "Decreto nº 3.578/1999 (Regimento Interno do TARF)"
+          ]
+        },
+        {
+          "nome": "IPVA",
+          "topicos": [
+            "Lei nº 6.017/1996 e alterações",
+            "Decreto nº 2.703/2006 e alterações"
+          ]
+        },
+        {
+          "nome": "ITCMD",
+          "topicos": [
+            "Lei Estadual nº 5.529/1989 e alterações",
+            "Decreto nº 154/2011 e alterações"
+          ]
+        },
+        {
+          "nome": "Outros atos normativos - Taxas / Parcelamento",
+          "topicos": [
+            "Lei Estadual nº 10.311/2023 e alterações",
+            "Decreto nº 4.185/2024 e alterações",
+            "Lei Estadual nº 7.591/2011 e alterações",
+            "Decreto nº 386/2011 e alterações",
+            "Lei Estadual nº 8.455/2016 e alterações",
+            "Parcelamento: Decreto nº 2.057/2018 e alterações"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D9",
+      "nome": "Contabilidade Geral, Avançada e de Custos",
+      "questoes": 20,
+      "subsecoes": [
+        {
+          "nome": "Contabilidade Geral",
+          "topicos": [
+            "Conceito, objeto, objetivos, campo de atuação e usuários da informação contábil",
+            "Estrutura Conceitual da Contabilidade (Pronunciamento Técnico CPC 00)",
+            "Apuração dos resultados",
+            "Regime de caixa e regime de competência",
+            "Componentes patrimoniais: Ativo, Passivo e Patrimônio Líquido",
+            "Fatos contábeis e respectivas variações patrimoniais",
+            "Pronunciamentos Técnicos do CPC",
+            "Demonstrações Contábeis (BP, DRE, DMPL, DRA, DFC, DVA): obrigatoriedade e apresentação; conteúdo dos grupos e subgrupos; classificação; critérios de avaliação e levantamento (Lei nº 6.404/1976 modificada pelas Leis 11.638/2007 e 11.941/2009 e CPC)",
+            "Demonstrações consolidadas",
+            "Investimento em controlada e coligada",
+            "Redução ao valor recuperável",
+            "Ativo imobilizado",
+            "Ativo intangível",
+            "Avaliação e contabilização de itens patrimoniais",
+            "Notas explicativas",
+            "Provisões, depreciações, amortizações e exaustão: cálculos e contabilização; apresentação e efeitos no resultado",
+            "Estoques: tipos de inventários, critérios e métodos de avaliação",
+            "Apuração do custo das mercadorias vendidas",
+            "Tratamento contábil dos tributos incidentes em compras e vendas",
+            "Conceitos sobre o SPED Contábil",
+            "Sociedades empresariais e não empresariais",
+            "Código Civil (Lei nº 10.406/2002), artigos 1179 a 1195",
+            "Aspectos contábeis do CPC/1973 (Lei nº 5.869/1973): escrituração contábil indivisível; aspectos intrínsecos e extrínsecos dos livros contábeis (Diário, Diário auxiliar, Razão Sintético, Razão Analítico)"
+          ]
+        },
+        {
+          "nome": "Contabilidade Avançada",
+          "topicos": [
+            "Critérios de avaliação e baixas das contas do Ativo: Investimentos, Imobilizado e Intangível",
+            "Contabilização de vendas, compras, devoluções, abatimentos, despesas e receitas operacionais e outras receitas e despesas",
+            "Consolidação das demonstrações contábeis: conceito, objetivos, procedimentos, critérios, obrigatoriedade e divulgação",
+            "Reorganização e reestruturação de empresas: incorporação, fusão, cisão e extinção (aspectos contábeis, fiscais, legais e societários)",
+            "Redução ao valor recuperável de ativos (Resolução CFC nº 1.292/2010)",
+            "Efeitos das mudanças nas taxas de câmbio e conversão de demonstrações contábeis (Resolução CFC nº 1.295/2010)",
+            "Filiais, agências, sucursais ou dependências no exterior",
+            "Conversão das demonstrações de uma entidade no exterior",
+            "Ativo intangível (Resolução CFC nº 1.303/2010)",
+            "Reconhecimento e mensuração; reconhecimento de despesa; mensuração após reconhecimento",
+            "Vida útil: definida e indefinida",
+            "Recuperação do valor contábil – perda por redução ao valor recuperável de ativos",
+            "Baixa e alienação",
+            "Arrendamento mercantil (Resolução CFC nº 1.304/2010)",
+            "Custos de transação e prêmios na emissão de títulos e valores mobiliários (Resolução CFC nº 1.313/2010)",
+            "Captações: capital próprio, ações em tesouraria, recursos de terceiros, contabilização temporária dos custos de transação",
+            "Subvenção e assistência governamentais (Resolução CFC nº 1.305/2010)",
+            "Ajuste a valor presente (Resolução CFC nº 1.151/2009)"
+          ]
+        },
+        {
+          "nome": "Contabilidade de Custos",
+          "topicos": [
+            "Custo: conceito, nomenclaturas, classificação dos custos e despesas, sistemas de custeio, formas de produção, métodos de custeio e sistemas de controle de custo",
+            "Custeio por absorção e custeio variável",
+            "Custeio e controle dos materiais diretos",
+            "Custeio, controle, tratamento contábil da mão de obra direta e indireta",
+            "Custeio, tratamento contábil e custos indiretos de fabricação",
+            "Critérios de rateio",
+            "Custeio por ordem e por processo",
+            "Custos e custeio da produção conjunta",
+            "Coprodutos, subprodutos e sucatas: conceito, cálculo e tratamento contábil",
+            "Margem de contribuição",
+            "Análise das relações custo/volume/lucro",
+            "Ponto de equilíbrio contábil, econômico e financeiro",
+            "Custeio baseado em atividades",
+            "ABC – Activity Based Costing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D10",
+      "nome": "Auditoria",
+      "questoes": 15,
+      "topicos": [
+        "Conceitos e objetivos",
+        "Distinção entre auditoria interna, auditoria independente e perícia contábil",
+        "Procedimentos de auditoria",
+        "Testes de observância",
+        "Testes substantivos",
+        "Papéis de trabalho e documentação de auditoria",
+        "Normas de execução dos trabalhos de auditoria",
+        "Planejamento da auditoria",
+        "Fraude e erro",
+        "Relevância na auditoria",
+        "Riscos da auditoria",
+        "Supervisão e controle de qualidade",
+        "Estudo e avaliação do sistema contábil e de controles internos",
+        "Continuidade normal dos negócios da entidade",
+        "Amostragem: tamanho, tipos e avaliação dos resultados",
+        "Processamento eletrônico de dados",
+        "Estimativas contábeis",
+        "Transações com partes relacionadas",
+        "Contingências",
+        "Transações e eventos subsequentes",
+        "Evidência em auditoria",
+        "Avaliação do negócio",
+        "Carta de responsabilidade da administração",
+        "Pareceres de auditoria",
+        "Parecer sem ressalva",
+        "Parecer com ressalva",
+        "Parecer adverso",
+        "Parecer com abstenção de opinião, parágrafo de ênfase",
+        "Estrutura conceitual para a elaboração e apresentação das demonstrações contábeis (Resolução CFC nº 1.374/2011)",
+        "Contabilidade regulatória – RN nº 396/2010 (ANEEL)",
+        "Comitê de Pronunciamentos Contábeis: CPC 06 (leasing), CPC 07 (Subvenção e Assistência Governamentais), CPC 12 (Ajuste a Valor Presente), CPC 16 (Estoques), CPC 27 (Ativo Imobilizado), CPC 47 (Receita de Contrato com Cliente)",
+        "Prova digital: MP nº 2.200-2 de 24/08/2001 (assinatura digital, certificação digital, criptografia); NF-e (Ajuste SINIEF 07/2005); EFD (Ajuste SINIEF 02/2009)"
+      ]
+    },
+    {
+      "id": "D11",
+      "nome": "Economia Regional",
+      "questoes": 10,
+      "subsecoes": [
+        {
+          "nome": "Noções de Economia Regional do Pará (Publicação “Pará em Números 2024”)",
+          "topicos": [
+            "Caracterização territorial: extensão, relevo, hidrografia, clima e regiões de integração e seus perfis econômicos",
+            "Estrutura produtiva: agricultura, pecuária, indústria, serviços, mineração e energia",
+            "Infraestrutura econômica: transporte, portos, aeroportos e energia elétrica"
+          ]
+        },
+        {
+          "nome": "Indicadores Econômicos do Pará",
+          "topicos": [
+            "PIB: evolução 2010–2022, composição setorial (agropecuária, indústria, serviços) e PIB per capita",
+            "Valor Adicionado Bruto por setor",
+            "Balança comercial: exportações, importações e principais produtos"
+          ]
+        },
+        {
+          "nome": "Indicadores Demográficos",
+          "topicos": [
+            "População total e evolução 2010–2023",
+            "Distribuição por faixa etária, razão de sexos e envelhecimento populacional",
+            "Taxa de fecundidade e mortalidade infantil"
+          ]
+        },
+        {
+          "nome": "Noções de Sustentabilidade",
+          "topicos": [
+            "Zoneamento ecológico-econômico",
+            "Desflorestamento acumulado e área de floresta",
+            "Cadastro Ambiental Rural (CAR) e cobertura",
+            "Focos de calor e indicadores ambientais"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Controle de Estudos — Auditor Fiscal</title>
+  <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">AF</div>
+      <div>
+        <div class="title">Controle de Estudos</div>
+        <div class="subtitle">Auditor Fiscal • Progresso por usuário (Supabase)</div>
+      </div>
+    </div>
+    <div id="userbar" class="row" style="align-items:center;gap:10px;">
+      <span id="userEmail" class="muted small"></span>
+      <button id="btnLogout" class="btn danger hide">Sair</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="cfgWarn" class="card alert hide"></div>
+
+    <section id="authCard" class="card">
+      <h2>Entrar / Criar conta</h2>
+      <p class="muted">Hospedagem no GitHub Pages (site estático). O salvamento do progresso é feito no servidor via Supabase.</p>
+
+      <div id="authErr" class="alert hide"></div>
+
+      <div class="row">
+        <div class="col">
+          <label class="small muted">Email</label>
+          <input id="email" type="email" placeholder="seu@email.com" autocomplete="username">
+        </div>
+        <div class="col">
+          <label class="small muted">Senha</label>
+          <input id="password" type="password" placeholder="mín. 6 caracteres" autocomplete="current-password">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <button id="btnLogin" class="btn primary">Entrar</button>
+        <button id="btnSignup" class="btn">Criar conta</button>
+      </div>
+
+      <p class="muted small" style="margin-top:12px;">
+        Se você ativar confirmação por email no Supabase, verifique sua caixa de entrada para confirmar o cadastro.
+      </p>
+    </section>
+
+    <section id="app" class="hide">
+      <div class="section">
+        <div class="card">
+          <h2>Progresso geral</h2>
+          <div class="progress"><div id="overallBar" class="bar" style="width:0%"></div></div>
+          <div class="muted"><span id="overallPct">0.0</span>% concluído</div>
+        </div>
+      </div>
+
+      <div id="discContainer"></div>
+    </section>
+  </main>
+
+  <!-- Supabase JS via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
