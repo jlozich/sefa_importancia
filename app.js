@@ -89,3 +89,24 @@ btnLogout.onclick = async () => {
 // Iniciar sessão se já estiver logado
 sb.auth.getSession().then(r => setUser(r.data.session?.user));
 sb.auth.onAuthStateChange((_e, s) => setUser(s?.user));
+// Atualizar progresso geral
+function updateProgresso() {
+  if (!currentUser) return;
+
+  const items = document.querySelectorAll(".topic.done").length;
+  const total = document.querySelectorAll(".topic").length;
+  const pct = total ? Math.round((items / total) * 100) : 0;
+
+  overallBar.style.width = pct + "%";
+  overallPct.textContent = pct;
+}
+
+document.addEventListener("click", e => {
+  if (e.target.closest(".topic")) {
+    e.target.closest(".topic").classList.toggle("done");
+    e.target.closest(".topic").classList.toggle("topic done");
+    updateProgresso();
+    updateProgresso();
+  }
+});
+
